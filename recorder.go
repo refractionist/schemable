@@ -11,6 +11,67 @@ import (
 type Recorder[T any] struct {
 	Schemer *Schemer[T]
 	Target *T
+	fields map[string]any
+}
+
+func (r *Recorder[T]) Load(ctx context.Context) error {
+	c := ClientFrom(ctx)
+	if c == nil {
+		return errors.New("no client in context")
+	}
+
+	q := c.Builder().Select(r.Schemer.Columns(false)...).From(r.Schemer.table).Where(r.WhereIDs())
+	qu, args, err := q.ToSql()
+	if err != nil {
+		return err
+	}
+
+	refs := r.fieldRefs(false)
+	err = c.QueryRow(ctx, qu, args...).Scan(refs...)
+	if err == nil {
+		r.setFields()
+	}
+	return err
+}
+
+func (r *Recorder[T]) LoadWhere(ctx context.Context, pred interface{}, args ...interface{}) error {
+	c := ClientFrom(ctx)
+	if c == nil {
+		return errors.New("no client in context")
+	}
+
+	q := c.Builder().Select(r.Schemer.Columns(true)...).From(r.Schemer.table).Where(pred, args...)
+	qu, args, err := q.ToSql()
+	if err != nil {
+		return err
+	}
+
+	refs := r.fieldRefs(true)
+	err = c.QueryRow(ctx, qu, args...).Scan(refs...)
+	if err == nil {
+		r.setFields()
+	}
+	return err
+}
+
+func (r *Recorder[T]) Exists(ctx context.Context) (bool, error) {
+	return r.ExistsWhere(ctx, r.WhereIDs())
+}
+
+func (r *Recorder[T]) ExistsWhere(ctx context.Context, pred any, args ...any) (bool, error) {
+	c := ClientFrom(ctx)
+	if c == nil {
+		return false, errors.New("no client in context")
+	}
+
+	q := c.Builder().Select("COUNT(*) > 0").From(r.Schemer.table).Where(pred, args...)
+	qu, args, err := q.ToSql()
+	if err != nil {
+		return false, err
+	}
+
+	has := false
+	return has, c.QueryRow(ctx, qu, args...).Scan(&has)
 }
 
 func (r *Recorder[T]) Insert(ctx context.Context) error {
@@ -48,7 +109,58 @@ func (r *Recorder[T]) Insert(ctx context.Context) error {
 		}
 		field.SetInt(id)
 	}
+	r.setFields()
 	return nil
+}
+
+func (r *Recorder[T]) Update(ctx context.Context) error {
+	updates := r.UpdatedFields()
+	if len(updates) == 0 {
+		return nil
+	}
+
+	c := ClientFrom(ctx)
+	if c == nil {
+		return errors.New("no client in context")
+	}
+
+	q := c.Builder().Update(r.Schemer.table).SetMap(updates).Where(r.WhereIDs())
+	qu, args, err := q.ToSql()
+	if err != nil {
+		return err
+	}
+	_, err = c.Exec(ctx, qu, args...)
+	if err == nil {
+		r.setFields()
+	}
+	return err
+}
+
+func (r *Recorder[T]) UpdatedFields() map[string]any {
+	fields := r.AllFields()
+	if r.fields == nil {
+		return fields
+	}
+
+	for col, val := range fields {
+		orig, ok := r.fields[col]
+		if ok && orig == val {
+			delete(fields, col)
+		}
+	}
+	return fields
+}
+
+func (r *Recorder[T]) WhereIDs() map[string]any {
+	clause := make(map[string]any, len(r.Schemer.keys))
+
+	rt := reflect.Indirect(reflect.ValueOf(r.Target))
+
+	for _, f := range r.Schemer.keys {
+		clause[f.selectcolumn] = rt.FieldByName(f.name).Interface()
+	}
+
+	return clause
 }
 
 func (r *Recorder[T]) fieldRefs(withKeys bool) []any {
@@ -73,17 +185,25 @@ func (r *Recorder[T]) fieldRefs(withKeys bool) []any {
 	return refs
 }
 
+func (r *Recorder[T]) setFields() {
+	r.fields = r.AllFields()
+}
+
+func (r *Recorder[T]) AllFields() map[string]any {
+	cols, vals := r.colValLists(false, true)
+	update := make(map[string]any, len(cols))
+	for i, col := range cols {
+		update[col] = vals[i]
+	}
+	return update
+}
+
 // colValLists returns 2 lists, the column names and values.
 // If withKeys is false, columns and values of fields designated as primary keys
 // will not be included in those lists. Also, if withAutos is false, the returned
 // lists will not include fields designated as auto-increment.
 func (r *Recorder[T]) colValLists(withKeys, withAutos bool) (columns []string, values []any) {
 	rt := reflect.Indirect(reflect.ValueOf(r.Target))
-	/*
-	if r.updates == nil {
-		r.updates = make(map[string]interface{})
-	}
-	*/
 
 	for _, field := range r.Schemer.fields {
 		switch {

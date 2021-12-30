@@ -10,6 +10,7 @@ import (
 type Client interface {
 	Exec(ctx context.Context, q string, args ...any) (sql.Result, error)
 	Query(ctx context.Context, q string, args ...any) (*sql.Rows, error)
+	QueryRow(ctx context.Context, q string, args ...any) *sql.Row
 	Builder() *sq.StatementBuilderType
 }
 
@@ -51,6 +52,10 @@ func (c *DBClient) Query(ctx context.Context, q string, args ...any) (*sql.Rows,
 	return c.db.QueryContext(ctx, q, args...)
 }
 
+func (c *DBClient) QueryRow(ctx context.Context, q string, args ...any) *sql.Row {
+	return c.db.QueryRowContext(ctx, q, args...)
+}
+
 func (c *DBClient) Close() error {
 	return c.db.Close()
 }
@@ -70,7 +75,6 @@ func (c *DBClient) Begin() (*TxnClient, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	builder := sq.StatementBuilder.RunWith(tx)
 	return &TxnClient{tx: tx, logger: c.logger, builder: &builder}, nil
 }
@@ -91,6 +95,10 @@ func (c *TxnClient) Exec(ctx context.Context, q string, args ...any) (sql.Result
 func (c *TxnClient) Query(ctx context.Context, q string, args ...any) (*sql.Rows, error) {
 	c.logger.LogQuery(q, args)
 	return c.tx.QueryContext(ctx, q, args...)
+}
+
+func (c *TxnClient) QueryRow(ctx context.Context, q string, args ...any) *sql.Row {
+	return c.tx.QueryRowContext(ctx, q, args...)
 }
 
 func (c *TxnClient) Builder() *sq.StatementBuilderType {

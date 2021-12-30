@@ -63,6 +63,7 @@ func (s *Schemer[T]) ListWhere(ctx context.Context, fn WhereFunc) ([]*Recorder[T
 		if err != nil {
 			return recs, err
 		}
+		rec.setFields()
 		recs = append(recs, rec)
 	}
 	return recs, rows.Err()
