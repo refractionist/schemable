@@ -19,7 +19,7 @@ type Thing struct {
 	Num  int    `db:"num"`
 }
 
-var ThingSchemer = schemable.Bind[Thing]("things")
+var Things = schemable.Bind[Thing]("things")
 ```
 
 Initialize the client and store in a context. This lets queries take advantage
@@ -37,14 +37,14 @@ Schemers can list and delete multiple records:
 ```go
 import sq "github.com/Masterminds/squirrel"
 
-thingRecs, err := ThingSchemer.List(ctx, func(q sq.SelectBuilder) sq.SelectBuilder {
+thingRecs, err := Things.List(ctx, func(q sq.SelectBuilder) sq.SelectBuilder {
   return q.Limit(10)
 })
 
 // Target is the actual *Thing instance
 thingRecs[0].Target
 
-sqlResult, err := ThingSchemer.DeleteWhere(ctx, func(q sq.DeleteBuilder) sq.DeleteBuilder {
+sqlResult, err := Things.DeleteWhere(ctx, func(q sq.DeleteBuilder) sq.DeleteBuilder {
   return q.Where(sq.Eq{"id": 1})
 })
 ```
@@ -76,7 +76,8 @@ err = rec.Delete(ctx)
 - [x] verify sqlite support
 - [ ] verify mysql support
 - [ ] verify postgres support
-- [ ] Automatic CI tests with github.com/refractionist/schemable_sqlitetest
+- [ ] Automatic CI tests schemable test repos
+  - [sqlitetest][https://github.com/refractionist/schemable_sqlitetest]
 
 ## Inspiration
 
