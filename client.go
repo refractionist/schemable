@@ -31,11 +31,17 @@ func New(driver, conn string) (*DBClient, error) {
 	}
 
 	builder := sq.StatementBuilder.RunWith(db)
-	return &DBClient{db: db, logger: nilLogger, builder: &builder}, nil
+	c := &DBClient{db: db, logger: nilLogger, builder: &builder}
+	c.SetLogger(nil)
+	return c, nil
 }
 
 func (c *DBClient) SetLogger(l QueryLogger) {
-	c.logger = l
+	if l == nil {
+		c.logger = nilLogger
+	} else {
+		c.logger = l
+	}
 }
 
 func (c *DBClient) Builder() *sq.StatementBuilderType {
