@@ -80,7 +80,8 @@ err = rec.Delete(ctx)
 
 ## Inspiration
 
-Heavily inspired by the [structable][st] package, and this [Facilitator][f] pattern.
+Heavily inspired by the [structable][st] package, and this [Facilitator][f]
+pattern for Go generics.
 
 [st]: https://github.com/Masterminds/structable
 [f]: https://rakyll.org/generics-facilititators
