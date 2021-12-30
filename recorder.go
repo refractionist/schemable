@@ -2,7 +2,6 @@ package schemable
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"reflect"
@@ -186,13 +185,8 @@ func (r *Recorder[T]) fieldRefs(withKeys bool) []any {
 		}
 
 		fv := ar.FieldByName(field.name)
-		var ref reflect.Value
-		switch fv.Kind() {
-		default:
 			// we want the address of field
-			ref = fv.Addr()
-		}
-		refs = append(refs, ref.Interface())
+		refs = append(refs, fv.Addr().Interface())
 	}
 
 	return refs
@@ -238,9 +232,6 @@ func (r *Recorder[T]) colValLists(withKeys, withAutos bool) (columns []string, v
 				// no indirection: the field is already a reference to its value
 				v = f.Elem()
 			}
-		case reflect.Map, reflect.Slice, reflect.Struct:
-			by, _ := json.Marshal(f.Interface())
-			v = reflect.ValueOf(string(by))
 		default:
 			// get the value pointed to by the field
 			v = reflect.Indirect(f)
