@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/refractionist/schemable_sqlitetest/internal/schemable"
+	"github.com/refractionist/schemable"
 )
 
 func TransactionTests(t *testing.T, dc *schemable.DBClient) {
