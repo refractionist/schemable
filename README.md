@@ -3,7 +3,7 @@
 Schemable provides basic struct mapping against a database, using the
 [squirrel][sq] package.
 
-sq: https://github.com/Masterminds/squirrel
+[sq]: https://github.com/Masterminds/squirrel
 
 NOTE: Only works on go 1.18, since it uses generics.
 
@@ -23,7 +23,7 @@ var ThingSchemer = schemable.Bind[Thing]("things")
 ```
 
 Initialize the client and store in a context. This lets queries take advantage
-of context cancellation.
+of context cancellation and timeouts.
 
 ```go
 // calls sql.Open(...)
@@ -82,5 +82,5 @@ err = rec.Delete(ctx)
 
 Heavily inspired by the [structable][st] package, and this [Facilitator][f] pattern.
 
-sq: https://github.com/Masterminds/squirrel
-f: https://rakyll.org/generics-facilititators
+[st]: https://github.com/Masterminds/structable
+[f]: https://rakyll.org/generics-facilititators
