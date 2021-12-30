@@ -136,6 +136,19 @@ func (r *Recorder[T]) Update(ctx context.Context) error {
 	return err
 }
 
+func (r *Recorder[T]) Delete(ctx context.Context) error {
+	c := ClientFrom(ctx)
+	if c == nil {
+		return errors.New("no client in context")
+	}
+
+	q := c.Builder().Delete(r.Schemer.table).Where(r.WhereIDs())
+	qu, args, err := q.ToSql()
+
+	_, err = c.Exec(ctx, qu, args...)
+	return err
+}
+
 func (r *Recorder[T]) UpdatedFields() map[string]any {
 	fields := r.AllFields()
 	if r.fields == nil {

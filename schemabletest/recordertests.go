@@ -33,13 +33,7 @@ func RecorderTests(t *testing.T, ctx context.Context) {
 		t.Run("Exists()", func(t *testing.T) {
 			t.Run("nil target", func(t *testing.T) {
 				rec := TestSchemer.Record(nil)
-				ok, err := rec.Exists(ctx)
-				if err != nil {
-					t.Fatal(err)
-				}
-				if ok {
-					t.Error("empty record exists")
-				}
+				refuteExists(t, ctx, rec)
 			})
 
 			t.Run("invalid ID", func(t *testing.T) {
@@ -47,26 +41,14 @@ func RecorderTests(t *testing.T, ctx context.Context) {
 					ID:  100,
 					ID2: 1000,
 				})
-				ok, err := rec.Exists(ctx)
-				if err != nil {
-					t.Fatal(err)
-				}
-				if ok {
-					t.Error("record exists")
-				}
+				refuteExists(t, ctx, rec)
 			})
 
 			rec := TestSchemer.Record(&TestStruct{
 				ID:  1,
 				ID2: 1,
 			})
-			ok, err := rec.Exists(ctx)
-			if err != nil {
-				t.Fatal(err)
-			}
-			if !ok {
-				t.Error("record does not exist")
-			}
+			assertExists(t, ctx, rec)
 		})
 
 		t.Run("Load()", func(t *testing.T) {
@@ -166,6 +148,25 @@ func RecorderTests(t *testing.T, ctx context.Context) {
 			if rec2.Target.Num != 201 {
 				t.Errorf("unexpected Num: %d", rec2.Target.Num)
 			}
+		})
+
+		t.Run("Delete()", func(t *testing.T) {
+			rec := TestSchemer.Record(&TestStruct{
+				ID2:  500,
+				Name: "Delete",
+				Num:  500,
+			})
+			if err := rec.Insert(ctx); err != nil {
+				t.Fatal(err)
+			}
+
+			assertExists(t, ctx, rec)
+
+			if err := rec.Delete(ctx); err != nil {
+				t.Fatal(err)
+			}
+
+			refuteExists(t, ctx, rec)
 		})
 
 		t.Run("UpdatedFields()", func(t *testing.T) {

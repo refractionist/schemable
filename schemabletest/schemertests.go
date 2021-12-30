@@ -43,6 +43,16 @@ func SchemerTests(t *testing.T, ctx context.Context) {
 			}
 		})
 
+		t.Run("DeleteWhere()", func(t *testing.T) {
+			rec := TestSchemer.Record(&TestStruct{
+				ID2:  50,
+				Name: "Deleting",
+			})
+			if err := rec.Insert(ctx); err != nil {
+				t.Fatal(err)
+			}
+		})
+
 		t.Run("Table()", func(t *testing.T) {
 			if tbl := TestSchemer.Table(); tbl != "test_structs" {
 				t.Errorf("unexpected table: %q", tbl)

@@ -12,6 +12,12 @@ import (
 // a select statement with the 'SELECT ... FROM tablename' portion composed already.
 type WhereFunc func(query sq.SelectBuilder) sq.SelectBuilder
 
+// DeleteFunc modifies a basic delete operation to add conditions.
+//
+// Technically, conditions are not limited to adding where clauses. It will receive
+// a select statement with the 'SELECT ... FROM tablename' portion composed already.
+type DeleteFunc func(query sq.DeleteBuilder) sq.DeleteBuilder
+
 func WithClient(ctx context.Context, c Client) context.Context {
 	return context.WithValue(ctx, clientKey, c)
 }

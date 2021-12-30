@@ -1,6 +1,7 @@
 package schemabletest
 
 import (
+	"context"
 	"testing"
 
 	"github.com/refractionist/schemable_sqlitetest/internal/schemable"
@@ -15,6 +16,30 @@ type TestStruct struct {
 }
 
 var TestSchemer = schemable.Bind[TestStruct]("test_structs")
+
+func assertExists(t *testing.T, ctx context.Context, r *schemable.Recorder[TestStruct]) {
+	t.Helper()
+	ok, err := r.Exists(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !ok {
+		t.Fatalf("does not exist: %+v", r.Target)
+	}
+}
+
+func refuteExists(t *testing.T, ctx context.Context, r *schemable.Recorder[TestStruct]) {
+	t.Helper()
+	ok, err := r.Exists(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if ok {
+		t.Fatalf("exists: %+v", r.Target)
+	}
+}
 
 func recorderErr(t *testing.T, r *schemable.Recorder[TestStruct]) {
 	t.Helper()

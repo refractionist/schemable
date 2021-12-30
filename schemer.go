@@ -2,6 +2,7 @@ package schemable
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"reflect"
 	"strings"
@@ -67,6 +68,24 @@ func (s *Schemer[T]) ListWhere(ctx context.Context, fn WhereFunc) ([]*Recorder[T
 		recs = append(recs, rec)
 	}
 	return recs, rows.Err()
+}
+
+func (s *Schemer[T]) DeleteWhere(ctx context.Context, fn DeleteFunc) (sql.Result, error) {
+	c := ClientFrom(ctx)
+	if c == nil {
+		return nil, errors.New("no client in context")
+	}
+
+	q := c.Builder().Delete(s.table)
+	if fn != nil {
+		q = fn(q)
+	}
+	qu, args, err := q.ToSql()
+	if err != nil {
+		return nil, err
+	}
+
+	return c.Exec(ctx, qu, args...)
 }
 
 func (s *Schemer[T]) Record(tgt *T) *Recorder[T] {
