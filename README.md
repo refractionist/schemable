@@ -53,13 +53,14 @@ Records are managed in Recorders that can Load, Insert, Update, and Delete.
 Updating only updates fields that have changed.
 
 ```go
-newRec := ThingScanner.Record(nil)
+// initialize an empty instance
+newRec := Things.Record(nil)
 newRec.Target.Name = "test"
 
 err := newRec.Insert(ctx)
 
 // load record by primary key
-rec := ThingScanner.Record(&Thing{ID: 1})
+rec := Things.Record(&Thing{ID: 1})
 ok, err := rec.Exists(ctx)
 err = rec.Load(ctx)
 
