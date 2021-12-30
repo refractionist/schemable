@@ -59,6 +59,7 @@ func (c *DBClient) Query(ctx context.Context, q string, args ...any) (*sql.Rows,
 }
 
 func (c *DBClient) QueryRow(ctx context.Context, q string, args ...any) *sql.Row {
+	c.logger.LogQuery(q, args)
 	return c.db.QueryRowContext(ctx, q, args...)
 }
 
@@ -104,6 +105,7 @@ func (c *TxnClient) Query(ctx context.Context, q string, args ...any) (*sql.Rows
 }
 
 func (c *TxnClient) QueryRow(ctx context.Context, q string, args ...any) *sql.Row {
+	c.logger.LogQuery(q, args)
 	return c.tx.QueryRowContext(ctx, q, args...)
 }
 
