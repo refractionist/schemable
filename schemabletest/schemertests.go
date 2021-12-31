@@ -3,6 +3,8 @@ package schemabletest
 import (
 	"context"
 	"testing"
+
+	sq "github.com/Masterminds/squirrel"
 )
 
 func SchemerTests(t *testing.T, ctx context.Context) {
@@ -26,6 +28,24 @@ func SchemerTests(t *testing.T, ctx context.Context) {
 					recorderErr(t, recs[1])
 				}
 			})
+
+			recs, err := ComicTitles.ListWhere(ctx, func(q sq.SelectBuilder) sq.SelectBuilder {
+				return q.Where(sq.Eq{"name": "one"})
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if len(recs) != 1 {
+				for i, r := range recs {
+					t.Logf("record %d: %+v", i, r.Target)
+				}
+				t.Fatal("wrong records")
+			}
+
+			if recs[0].Target.Name != "one" {
+				recorderErr(t, recs[0])
+			}
 		})
 
 		t.Run("List()", func(t *testing.T) {
@@ -51,6 +71,11 @@ func SchemerTests(t *testing.T, ctx context.Context) {
 			if err := rec.Insert(ctx); err != nil {
 				t.Fatal(err)
 			}
+
+			assertExists(t, ctx, rec)
+			ComicTitles.DeleteWhere(ctx, func(q sq.DeleteBuilder) sq.DeleteBuilder {
+				return q.Where(sq.Eq{"name": "Deleting"})
+			})
 		})
 
 		t.Run("Table()", func(t *testing.T) {
