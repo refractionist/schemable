@@ -91,19 +91,19 @@ func SchemerTests(t *testing.T, ctx context.Context) {
 					t.Fatalf("invalid columns: %+v", cols)
 				}
 
-				if cols[0] != "test_structs.id" {
+				if cols[0] != "comic_titles.id" {
 					t.Errorf("invalid col 0: %q", cols[0])
 				}
 
-				if cols[1] != "test_structs.id_two" {
+				if cols[1] != "comic_titles.id_two" {
 					t.Errorf("invalid col 1: %q", cols[1])
 				}
 
-				if cols[2] != "test_structs.name" {
+				if cols[2] != "comic_titles.name" {
 					t.Errorf("invalid col 2: %q", cols[2])
 				}
 
-				if cols[3] != "test_structs.volume" {
+				if cols[3] != "comic_titles.volume" {
 					t.Errorf("invalid col 3: %q", cols[3])
 				}
 			})
@@ -114,11 +114,11 @@ func SchemerTests(t *testing.T, ctx context.Context) {
 					t.Fatalf("invalid columns: %+v", cols)
 				}
 
-				if cols[0] != "test_structs.name" {
+				if cols[0] != "comic_titles.name" {
 					t.Errorf("invalid col 0: %q", cols[0])
 				}
 
-				if cols[1] != "test_structs.volume" {
+				if cols[1] != "comic_titles.volume" {
 					t.Errorf("invalid col 1: %q", cols[1])
 				}
 			})

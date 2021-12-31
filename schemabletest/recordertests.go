@@ -254,11 +254,11 @@ func RecorderTests(t *testing.T, ctx context.Context) {
 			})
 
 			clause := rec.WhereIDs()
-			if val := clause["test_structs.id"]; val != int64(1) {
+			if val := clause["comic_titles.id"]; val != int64(1) {
 				t.Errorf("unexpected ID: %T %+v", val, val)
 			}
 
-			if val := clause["test_structs.id_two"]; val != int64(2) {
+			if val := clause["comic_titles.id_two"]; val != int64(2) {
 				t.Errorf("unexpected ID2: %T %+v", val, val)
 			}
 
