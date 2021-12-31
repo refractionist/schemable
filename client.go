@@ -77,8 +77,8 @@ type TxnClient struct {
 	builder *sq.StatementBuilderType
 }
 
-func (c *DBClient) Begin() (*TxnClient, error) {
-	tx, err := c.db.Begin()
+func (c *DBClient) Begin(ctx context.Context, opts *sql.TxOptions) (*TxnClient, error) {
+	tx, err := c.db.BeginTx(ctx, opts)
 	if err != nil {
 		return nil, err
 	}

@@ -20,7 +20,7 @@ func TransactionTests(t *testing.T, dc *schemable.DBClient) {
 		}
 
 		t.Run("Rollback", func(t *testing.T) {
-			tc, err := dc.Begin()
+			tc, err := dc.Begin(dctx, nil)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -45,7 +45,7 @@ func TransactionTests(t *testing.T, dc *schemable.DBClient) {
 		})
 
 		t.Run("Commit", func(t *testing.T) {
-			tc, err := dc.Begin()
+			tc, err := dc.Begin(dctx, nil)
 			if err != nil {
 				t.Fatal(err)
 			}
