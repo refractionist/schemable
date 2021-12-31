@@ -13,13 +13,13 @@ Schemable works with annotated structs, and schemers that bind those structs
 to tables.
 
 ```go
-type Thing struct {
-	ID   int64  `db:"id, PRIMARY KEY, AUTO INCREMENT"`
-	Name string `db:"name"`
-	Num  int    `db:"num"`
+type ComicTitle struct {
+	ID     int64  `db:"id, PRIMARY KEY, AUTO INCREMENT"`
+	Name   string `db:"name"`
+	Volume int    `db:"num"`
 }
 
-var Things = schemable.Bind[Thing]("things")
+var ComicTitles = schemable.Bind[ComicTitle]("comic_titles")
 ```
 
 Initialize the client and store in a context. This lets queries take advantage
@@ -37,14 +37,14 @@ Schemers can list and delete multiple records:
 ```go
 import sq "github.com/Masterminds/squirrel"
 
-thingRecs, err := Things.List(ctx, func(q sq.SelectBuilder) sq.SelectBuilder {
+titleRecs, err := ComicTitles.ListWhere(ctx, func(q sq.SelectBuilder) sq.SelectBuilder {
   return q.Limit(10)
 })
 
-// Target is the actual *Thing instance
-thingRecs[0].Target
+// Target is the actual *ComicTitle instance
+titleRecs[0].Target
 
-sqlResult, err := Things.DeleteWhere(ctx, func(q sq.DeleteBuilder) sq.DeleteBuilder {
+sqlResult, err := ComicTitles.DeleteWhere(ctx, func(q sq.DeleteBuilder) sq.DeleteBuilder {
   return q.Where(sq.Eq{"id": 1})
 })
 ```
@@ -54,22 +54,37 @@ Updating only updates fields that have changed.
 
 ```go
 // initialize an empty instance
-newRec := Things.Record(nil)
-newRec.Target.Name = "test"
+newRec := ComicTitles.Record(nil)
+newRec.Target.Name = "The X-Men"
+newRec.Target.Volume = 1
 
 err := newRec.Insert(ctx)
 
 // load record by primary key
-rec := Things.Record(&Thing{ID: 1})
+rec := ComicTitles.Record(&ComicTitle{ID: 1})
 ok, err := rec.Exists(ctx)
 err = rec.Load(ctx)
 
 // only updates name column
-rec.Target.Name = "updated"
+rec.Target.Name = "The Uncanny X-Men"
 err = rec.Update(ctx)
 
 // deletes record
 err = rec.Delete(ctx)
+```
+
+Schemable works with db transactions too:
+
+```go
+// TxOptions is optional and can be nil
+txc, err := client.Begin(ctx, &sql.TxOptions{...})
+
+tctx := schemable.WithClient(ctx, txc)
+txRec := ComicTitles.Record(nil)
+txRec.Title = "The Immortal X-Men"
+err = txRec.Insert(tctx)
+
+err = txc.Commit() // or txc.Rollback()
 ```
 
 ## TODO
