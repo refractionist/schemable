@@ -9,7 +9,7 @@ func SchemerTests(t *testing.T, ctx context.Context) {
 	t.Run("Schemer", func(t *testing.T) {
 		t.Run("ListWhere()", func(t *testing.T) {
 			t.Run("nil WhereFunc", func(t *testing.T) {
-				recs, err := TestSchemer.ListWhere(ctx, nil)
+				recs, err := ComicTitles.ListWhere(ctx, nil)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -29,7 +29,7 @@ func SchemerTests(t *testing.T, ctx context.Context) {
 		})
 
 		t.Run("List()", func(t *testing.T) {
-			recs, err := TestSchemer.List(ctx, 10, 1)
+			recs, err := ComicTitles.List(ctx, 10, 1)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -44,7 +44,7 @@ func SchemerTests(t *testing.T, ctx context.Context) {
 		})
 
 		t.Run("DeleteWhere()", func(t *testing.T) {
-			rec := TestSchemer.Record(&TestStruct{
+			rec := ComicTitles.Record(&ComicTitle{
 				ID2:  50,
 				Name: "Deleting",
 			})
@@ -54,14 +54,14 @@ func SchemerTests(t *testing.T, ctx context.Context) {
 		})
 
 		t.Run("Table()", func(t *testing.T) {
-			if tbl := TestSchemer.Table(); tbl != "test_structs" {
+			if tbl := ComicTitles.Table(); tbl != "comic_titles" {
 				t.Errorf("unexpected table: %q", tbl)
 			}
 		})
 
 		t.Run("Columns()", func(t *testing.T) {
 			t.Run("with keys", func(t *testing.T) {
-				cols := TestSchemer.Columns(true)
+				cols := ComicTitles.Columns(true)
 				if len(cols) != 4 {
 					t.Fatalf("invalid columns: %+v", cols)
 				}
@@ -78,13 +78,13 @@ func SchemerTests(t *testing.T, ctx context.Context) {
 					t.Errorf("invalid col 2: %q", cols[2])
 				}
 
-				if cols[3] != "test_structs.num" {
+				if cols[3] != "test_structs.volume" {
 					t.Errorf("invalid col 3: %q", cols[3])
 				}
 			})
 
 			t.Run("without keys", func(t *testing.T) {
-				cols := TestSchemer.Columns(false)
+				cols := ComicTitles.Columns(false)
 				if l := len(cols); l != 2 {
 					t.Fatalf("invalid columns: %+v", cols)
 				}
@@ -93,7 +93,7 @@ func SchemerTests(t *testing.T, ctx context.Context) {
 					t.Errorf("invalid col 0: %q", cols[0])
 				}
 
-				if cols[1] != "test_structs.num" {
+				if cols[1] != "test_structs.volume" {
 					t.Errorf("invalid col 1: %q", cols[1])
 				}
 			})

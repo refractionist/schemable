@@ -10,10 +10,10 @@ import (
 func TransactionTests(t *testing.T, dc *schemable.DBClient) {
 	t.Run("TxnClient", func(t *testing.T) {
 		dctx := schemable.WithClient(context.Background(), dc)
-		rec := TestSchemer.Record(&TestStruct{
-			ID2:  5,
-			Name: "transaction",
-			Num:  5,
+		rec := ComicTitles.Record(&ComicTitle{
+			ID2:    5,
+			Name:   "transaction",
+			Volume: 5,
 		})
 		if err := rec.Insert(dctx); err != nil {
 			t.Fatal(err)

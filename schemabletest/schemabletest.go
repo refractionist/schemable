@@ -7,17 +7,17 @@ import (
 	"github.com/refractionist/schemable"
 )
 
-type TestStruct struct {
+type ComicTitle struct {
 	ID      int64  `db:"id, PRIMARY KEY, AUTO INCREMENT"`
 	ID2     int64  `db:"id_two, PRIMARY KEY"`
 	Name    string `db:"name"`
-	Num     int    `db:"num"`
+	Volume  int    `db:"volume"`
 	Ignored string
 }
 
-var TestSchemer = schemable.Bind[TestStruct]("test_structs")
+var ComicTitles = schemable.Bind[ComicTitle]("comic_titles")
 
-func assertExists(t *testing.T, ctx context.Context, r *schemable.Recorder[TestStruct]) {
+func assertExists(t *testing.T, ctx context.Context, r *schemable.Recorder[ComicTitle]) {
 	t.Helper()
 	ok, err := r.Exists(ctx)
 	if err != nil {
@@ -29,7 +29,7 @@ func assertExists(t *testing.T, ctx context.Context, r *schemable.Recorder[TestS
 	}
 }
 
-func refuteExists(t *testing.T, ctx context.Context, r *schemable.Recorder[TestStruct]) {
+func refuteExists(t *testing.T, ctx context.Context, r *schemable.Recorder[ComicTitle]) {
 	t.Helper()
 	ok, err := r.Exists(ctx)
 	if err != nil {
@@ -41,7 +41,7 @@ func refuteExists(t *testing.T, ctx context.Context, r *schemable.Recorder[TestS
 	}
 }
 
-func recorderErr(t *testing.T, r *schemable.Recorder[TestStruct]) {
+func recorderErr(t *testing.T, r *schemable.Recorder[ComicTitle]) {
 	t.Helper()
 	t.Errorf("invalid %T record", r.Target)
 	t.Logf("recorder: %+v", r)

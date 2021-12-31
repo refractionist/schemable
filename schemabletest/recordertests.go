@@ -11,19 +11,19 @@ func RecorderTests(t *testing.T, ctx context.Context) {
 	t.Run("Recorder", func(t *testing.T) {
 		t.Run("Insert()", func(t *testing.T) {
 			t.Run("nil target", func(t *testing.T) {
-				rec := TestSchemer.Record(nil)
+				rec := ComicTitles.Record(nil)
 				rec.Target.ID2 = 1
 				rec.Target.Name = "one"
-				rec.Target.Num = 100
+				rec.Target.Volume = 100
 				if err := rec.Insert(ctx); err != nil {
 					t.Fatal(err)
 				}
 			})
 
-			rec := TestSchemer.Record(&TestStruct{
-				ID2:  2,
-				Name: "two",
-				Num:  200,
+			rec := ComicTitles.Record(&ComicTitle{
+				ID2:    2,
+				Name:   "two",
+				Volume: 200,
 			})
 			if err := rec.Insert(ctx); err != nil {
 				t.Fatal(err)
@@ -32,19 +32,19 @@ func RecorderTests(t *testing.T, ctx context.Context) {
 
 		t.Run("Exists()", func(t *testing.T) {
 			t.Run("nil target", func(t *testing.T) {
-				rec := TestSchemer.Record(nil)
+				rec := ComicTitles.Record(nil)
 				refuteExists(t, ctx, rec)
 			})
 
 			t.Run("invalid ID", func(t *testing.T) {
-				rec := TestSchemer.Record(&TestStruct{
+				rec := ComicTitles.Record(&ComicTitle{
 					ID:  100,
 					ID2: 1000,
 				})
 				refuteExists(t, ctx, rec)
 			})
 
-			rec := TestSchemer.Record(&TestStruct{
+			rec := ComicTitles.Record(&ComicTitle{
 				ID:  1,
 				ID2: 1,
 			})
@@ -53,13 +53,13 @@ func RecorderTests(t *testing.T, ctx context.Context) {
 
 		t.Run("Load()", func(t *testing.T) {
 			t.Run("nil target", func(t *testing.T) {
-				rec := TestSchemer.Record(nil)
+				rec := ComicTitles.Record(nil)
 				if err := rec.Load(ctx); err == nil {
 					t.Error("loaded nil record")
 				}
 			})
 
-			rec := TestSchemer.Record(&TestStruct{
+			rec := ComicTitles.Record(&ComicTitle{
 				ID:  1,
 				ID2: 1,
 			})
@@ -72,8 +72,8 @@ func RecorderTests(t *testing.T, ctx context.Context) {
 				t.Errorf("unexpected Name: %q", rec.Target.Name)
 			}
 
-			if rec.Target.Num != 100 {
-				t.Errorf("unexpected Num: %d", rec.Target.Num)
+			if rec.Target.Volume != 100 {
+				t.Errorf("unexpected Volume: %d", rec.Target.Volume)
 			}
 
 			if t.Failed() {
@@ -82,7 +82,7 @@ func RecorderTests(t *testing.T, ctx context.Context) {
 		})
 
 		t.Run("LoadWhere()", func(t *testing.T) {
-			rec := TestSchemer.Record(nil)
+			rec := ComicTitles.Record(nil)
 
 			t.Run("invalid where clause", func(t *testing.T) {
 				if err := rec.LoadWhere(ctx, sq.Eq{"name": "invalid"}); err == nil {
@@ -106,13 +106,13 @@ func RecorderTests(t *testing.T, ctx context.Context) {
 				t.Errorf("unexpected Name: %q", rec.Target.Name)
 			}
 
-			if rec.Target.Num != 100 {
-				t.Errorf("unexpected Num: %d", rec.Target.Num)
+			if rec.Target.Volume != 100 {
+				t.Errorf("unexpected Volume: %d", rec.Target.Volume)
 			}
 		})
 
 		t.Run("Update()", func(t *testing.T) {
-			rec := TestSchemer.Record(&TestStruct{
+			rec := ComicTitles.Record(&ComicTitle{
 				ID:  2,
 				ID2: 2,
 			})
@@ -125,16 +125,16 @@ func RecorderTests(t *testing.T, ctx context.Context) {
 				t.Errorf("unexpected Name: %q", rec.Target.Name)
 			}
 
-			if rec.Target.Num != 200 {
-				t.Errorf("unexpected Num: %d", rec.Target.Num)
+			if rec.Target.Volume != 200 {
+				t.Errorf("unexpected Volume: %d", rec.Target.Volume)
 			}
 
-			rec.Target.Num = 201
+			rec.Target.Volume = 201
 			if err := rec.Update(ctx); err != nil {
 				t.Fatal(err)
 			}
 
-			rec2 := TestSchemer.Record(&TestStruct{
+			rec2 := ComicTitles.Record(&ComicTitle{
 				ID:  2,
 				ID2: 2,
 			})
@@ -145,16 +145,16 @@ func RecorderTests(t *testing.T, ctx context.Context) {
 				t.Errorf("unexpected Name: %q", rec2.Target.Name)
 			}
 
-			if rec2.Target.Num != 201 {
-				t.Errorf("unexpected Num: %d", rec2.Target.Num)
+			if rec2.Target.Volume != 201 {
+				t.Errorf("unexpected Volume: %d", rec2.Target.Volume)
 			}
 		})
 
 		t.Run("Delete()", func(t *testing.T) {
-			rec := TestSchemer.Record(&TestStruct{
-				ID2:  500,
-				Name: "Delete",
-				Num:  500,
+			rec := ComicTitles.Record(&ComicTitle{
+				ID2:    500,
+				Name:   "Delete",
+				Volume: 500,
 			})
 			if err := rec.Insert(ctx); err != nil {
 				t.Fatal(err)
@@ -170,18 +170,18 @@ func RecorderTests(t *testing.T, ctx context.Context) {
 		})
 
 		t.Run("UpdatedFields()", func(t *testing.T) {
-			rec := TestSchemer.Record(&TestStruct{
-				ID2:  3,
-				Name: "three",
-				Num:  300,
+			rec := ComicTitles.Record(&ComicTitle{
+				ID2:    3,
+				Name:   "three",
+				Volume: 300,
 			})
 
 			inserting := rec.UpdatedFields()
 			if val := inserting["name"]; val != "three" {
 				t.Errorf("unexpected Name: %q", val)
 			}
-			if val := inserting["num"]; val != 300 {
-				t.Errorf("unexpected Num: %T %+v", val, val)
+			if val := inserting["volume"]; val != 300 {
+				t.Errorf("unexpected Volume: %T %+v", val, val)
 			}
 			if val := inserting["id"]; val != nil {
 				t.Errorf("ID is set: %T %+v", val, val)
@@ -199,13 +199,13 @@ func RecorderTests(t *testing.T, ctx context.Context) {
 				t.Error("updated fields should be empty")
 			}
 
-			rec.Target.Num = 301
+			rec.Target.Volume = 301
 			preupdate := rec.UpdatedFields()
 			if val := preupdate["name"]; val != nil {
 				t.Errorf("Name is set: %T %+v", val, val)
 			}
-			if val := preupdate["num"]; val != 301 {
-				t.Errorf("unexpected Num: %T %+v", val, val)
+			if val := preupdate["volume"]; val != 301 {
+				t.Errorf("unexpected Volume: %T %+v", val, val)
 			}
 			if val := preupdate["id"]; val != nil {
 				t.Errorf("ID is set: %T %+v", val, val)
@@ -225,19 +225,19 @@ func RecorderTests(t *testing.T, ctx context.Context) {
 		})
 
 		t.Run("AllFields()", func(t *testing.T) {
-			rec := TestSchemer.Record(&TestStruct{
-				ID:   1,
-				ID2:  2,
-				Name: "FieldMap",
-				Num:  7,
+			rec := ComicTitles.Record(&ComicTitle{
+				ID:     1,
+				ID2:    2,
+				Name:   "FieldMap",
+				Volume: 7,
 			})
 
 			fmap := rec.AllFields()
 			if val := fmap["name"]; val != "FieldMap" {
 				t.Errorf("unexpected Name: %q", val)
 			}
-			if val := fmap["num"]; val != 7 {
-				t.Errorf("unexpected Num: %T %+v", val, val)
+			if val := fmap["volume"]; val != 7 {
+				t.Errorf("unexpected Volume: %T %+v", val, val)
 			}
 			if val := fmap["id"]; val != nil {
 				t.Errorf("ID is set: %T %+v", val, val)
@@ -248,7 +248,7 @@ func RecorderTests(t *testing.T, ctx context.Context) {
 		})
 
 		t.Run("WhereIDs()", func(t *testing.T) {
-			rec := TestSchemer.Record(&TestStruct{
+			rec := ComicTitles.Record(&ComicTitle{
 				ID:  1,
 				ID2: 2,
 			})
