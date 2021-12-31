@@ -16,7 +16,7 @@ to tables.
 type ComicTitle struct {
 	ID     int64  `db:"id, PRIMARY KEY, AUTO INCREMENT"`
 	Name   string `db:"name"`
-	Volume int    `db:"num"`
+	Volume int    `db:"volume"`
 }
 
 var ComicTitles = schemable.Bind[ComicTitle]("comic_titles")
