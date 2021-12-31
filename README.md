@@ -93,7 +93,7 @@ err = txc.Commit() // or txc.Rollback()
 - [ ] verify mysql support
 - [ ] verify postgres support
 - [ ] Automatic CI tests schemable test repos
-  - [sqlitetest][https://github.com/refractionist/schemable_sqlitetest]
+  - [sqlitetest](https://github.com/refractionist/schemable_sqlitetest)
 
 ## Inspiration
 
