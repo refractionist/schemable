@@ -169,14 +169,14 @@ func RecorderTests(t *testing.T, ctx context.Context) {
 			refuteExists(t, ctx, rec)
 		})
 
-		t.Run("UpdatedFields()", func(t *testing.T) {
+		t.Run("UpdatedValues()", func(t *testing.T) {
 			rec := ComicTitles.Record(&ComicTitle{
 				ID2:    3,
 				Name:   "three",
 				Volume: 300,
 			})
 
-			inserting := rec.UpdatedFields()
+			inserting := rec.UpdatedValues()
 			if val := inserting["name"]; val != "three" {
 				t.Errorf("unexpected Name: %q", val)
 			}
@@ -194,13 +194,13 @@ func RecorderTests(t *testing.T, ctx context.Context) {
 				t.Fatal(err)
 			}
 
-			postinsert := rec.UpdatedFields()
+			postinsert := rec.UpdatedValues()
 			if l := len(postinsert); l != 0 {
 				t.Error("updated fields should be empty")
 			}
 
 			rec.Target.Volume = 301
-			preupdate := rec.UpdatedFields()
+			preupdate := rec.UpdatedValues()
 			if val := preupdate["name"]; val != nil {
 				t.Errorf("Name is set: %T %+v", val, val)
 			}
@@ -218,13 +218,13 @@ func RecorderTests(t *testing.T, ctx context.Context) {
 				t.Fatal(err)
 			}
 
-			postupdate := rec.UpdatedFields()
+			postupdate := rec.UpdatedValues()
 			if l := len(postupdate); l != 0 {
 				t.Error("updated fields should be empty")
 			}
 		})
 
-		t.Run("AllFields()", func(t *testing.T) {
+		t.Run("Values()", func(t *testing.T) {
 			rec := ComicTitles.Record(&ComicTitle{
 				ID:     1,
 				ID2:    2,
@@ -232,7 +232,7 @@ func RecorderTests(t *testing.T, ctx context.Context) {
 				Volume: 7,
 			})
 
-			fmap := rec.AllFields()
+			fmap := rec.Values()
 			if val := fmap["name"]; val != "FieldMap" {
 				t.Errorf("unexpected Name: %q", val)
 			}

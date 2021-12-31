@@ -10,6 +10,8 @@ import (
 	sq "github.com/Masterminds/squirrel"
 )
 
+// Schemer maintains the table and column mapping of the generic type T. It
+// parses the column and primary key info from the struct field tags.
 type Schemer[T any] struct {
 	table string
 	fields []*field
@@ -17,6 +19,7 @@ type Schemer[T any] struct {
 	kind reflect.Type
 }
 
+// Bind creates a Schemer table/column mapping for the given generic type T.
 func Bind[T any](table string) *Schemer[T] {
 	tgt := new(T)
 	fields, keys := scanFields(table, tgt)
@@ -28,23 +31,23 @@ func Bind[T any](table string) *Schemer[T] {
 	}
 }
 
+// List returns rows of type T embedded in Recorders, using the given limit
+// and offset values. The context must have a client embedded with WithClient().
 func (s *Schemer[T]) List(ctx context.Context, limit, offset uint64) ([]*Recorder[T], error) {
 	return s.ListWhere(ctx, func(q sq.SelectBuilder) sq.SelectBuilder {
 		return q.Limit(limit).Offset(offset)
 	})
 }
 
+// ListWhere returns rows of type T embedded in Recorders, filtered by the
+// given WhereFunc. The context must have a client embedded with WithClient().
 func (s *Schemer[T]) ListWhere(ctx context.Context, fn WhereFunc) ([]*Recorder[T], error) {
 	c := ClientFrom(ctx)
 	if c == nil {
 		return nil, errors.New("no client in context")
 	}
 
-	q := c.Builder().Select(s.Columns(true)...).From(s.table)
-	if fn != nil {
-		q = fn(q)
-	}
-
+	q := fn(c.Builder().Select(s.Columns(true)...).From(s.table))
 	qu, args, err := q.ToSql()
 	if err != nil {
 		return nil, err
@@ -64,22 +67,21 @@ func (s *Schemer[T]) ListWhere(ctx context.Context, fn WhereFunc) ([]*Recorder[T
 		if err != nil {
 			return recs, err
 		}
-		rec.setFields()
+		rec.setValues()
 		recs = append(recs, rec)
 	}
 	return recs, rows.Err()
 }
 
+// DeleteWhere deletes rows filtered by the given DeleteFunc. The context must
+// have a client embedded with WithClient().
 func (s *Schemer[T]) DeleteWhere(ctx context.Context, fn DeleteFunc) (sql.Result, error) {
 	c := ClientFrom(ctx)
 	if c == nil {
 		return nil, errors.New("no client in context")
 	}
 
-	q := c.Builder().Delete(s.table)
-	if fn != nil {
-		q = fn(q)
-	}
+	q := fn(c.Builder().Delete(s.table))
 	qu, args, err := q.ToSql()
 	if err != nil {
 		return nil, err
@@ -88,6 +90,8 @@ func (s *Schemer[T]) DeleteWhere(ctx context.Context, fn DeleteFunc) (sql.Result
 	return c.Exec(ctx, qu, args...)
 }
 
+// Record returns a Recorder for the given instance, creating a new one if nil
+// is provided.
 func (s *Schemer[T]) Record(tgt *T) *Recorder[T] {
 	if tgt == nil {
 		tgt = new(T)
@@ -95,10 +99,14 @@ func (s *Schemer[T]) Record(tgt *T) *Recorder[T] {
 	return &Recorder[T]{Schemer: s, Target: tgt}
 }
 
+// Table returns the table name that the Schemer's type T uses.
 func (s *Schemer[T]) Table() string {
 	return s.table
 }
 
+// Columns returns the column names for the Schemer's type T, optionally with
+// or without primary key columns. Columns are disambiguated with the table
+// name for join queries.
 func (s *Schemer[T]) Columns(withKeys bool) []string {
 	names := make([]string, 0, len(s.fields))
 	for _, f := range s.fields {

@@ -10,25 +10,6 @@ import (
 func SchemerTests(t *testing.T, ctx context.Context) {
 	t.Run("Schemer", func(t *testing.T) {
 		t.Run("ListWhere()", func(t *testing.T) {
-			t.Run("nil WhereFunc", func(t *testing.T) {
-				recs, err := ComicTitles.ListWhere(ctx, nil)
-				if err != nil {
-					t.Fatal(err)
-				}
-
-				if len(recs) == 0 {
-					t.Fatal("no records")
-				}
-
-				if recs[0].Target.Name != "one" {
-					recorderErr(t, recs[0])
-				}
-
-				if recs[1].Target.Name != "two" {
-					recorderErr(t, recs[1])
-				}
-			})
-
 			recs, err := ComicTitles.ListWhere(ctx, func(q sq.SelectBuilder) sq.SelectBuilder {
 				return q.Where(sq.Eq{"name": "one"})
 			})

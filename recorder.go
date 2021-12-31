@@ -7,12 +7,15 @@ import (
 	"reflect"
 )
 
+// Recorder records changes to Target of type T using its Schemer.
 type Recorder[T any] struct {
 	Schemer *Schemer[T]
 	Target *T
-	fields map[string]any
+	values map[string]any
 }
 
+// Load reloads the Recorder Target's columns (except primary keys) from the
+// database.
 func (r *Recorder[T]) Load(ctx context.Context) error {
 	c := ClientFrom(ctx)
 	if c == nil {
@@ -28,12 +31,14 @@ func (r *Recorder[T]) Load(ctx context.Context) error {
 	refs := r.fieldRefs(false)
 	err = c.QueryRow(ctx, qu, args...).Scan(refs...)
 	if err == nil {
-		r.setFields()
+		r.setValues()
 	}
 	return err
 }
 
-func (r *Recorder[T]) LoadWhere(ctx context.Context, pred interface{}, args ...interface{}) error {
+// LoadWhere loads a single Recorder Target using the given predicate args for
+// a Where clause on the squirrel query builder.
+func (r *Recorder[T]) LoadWhere(ctx context.Context, pred any, args ...any) error {
 	c := ClientFrom(ctx)
 	if c == nil {
 		return errors.New("no client in context")
@@ -48,15 +53,19 @@ func (r *Recorder[T]) LoadWhere(ctx context.Context, pred interface{}, args ...i
 	refs := r.fieldRefs(true)
 	err = c.QueryRow(ctx, qu, args...).Scan(refs...)
 	if err == nil {
-		r.setFields()
+		r.setValues()
 	}
 	return err
 }
 
+// Exists checks if the given Recorder Target exists in the db according to its
+// primary keys.
 func (r *Recorder[T]) Exists(ctx context.Context) (bool, error) {
 	return r.ExistsWhere(ctx, r.WhereIDs())
 }
 
+// ExistsWhere checks if any Recorder Target exists using the given predicate
+// args for a Where clause on the squirrel query builder.
 func (r *Recorder[T]) ExistsWhere(ctx context.Context, pred any, args ...any) (bool, error) {
 	c := ClientFrom(ctx)
 	if c == nil {
@@ -73,6 +82,7 @@ func (r *Recorder[T]) ExistsWhere(ctx context.Context, pred any, args ...any) (b
 	return has, c.QueryRow(ctx, qu, args...).Scan(&has)
 }
 
+// Insert uses the Recorder's Schemer to insert the Target into the database.
 func (r *Recorder[T]) Insert(ctx context.Context) error {
 	c := ClientFrom(ctx)
 	if c == nil {
@@ -108,12 +118,14 @@ func (r *Recorder[T]) Insert(ctx context.Context) error {
 		}
 		field.SetInt(id)
 	}
-	r.setFields()
+	r.setValues()
 	return nil
 }
 
+// Insert uses the Recorder's Schemer to update the Target in the database,
+// skipping if no values were updated since this Recorder was instantiated.
 func (r *Recorder[T]) Update(ctx context.Context) error {
-	updates := r.UpdatedFields()
+	updates := r.UpdatedValues()
 	if len(updates) == 0 {
 		return nil
 	}
@@ -130,11 +142,13 @@ func (r *Recorder[T]) Update(ctx context.Context) error {
 	}
 	_, err = c.Exec(ctx, qu, args...)
 	if err == nil {
-		r.setFields()
+		r.setValues()
 	}
 	return err
 }
 
+// Delete removes this Recorder's Target from its Schemer's table in the
+// database.
 func (r *Recorder[T]) Delete(ctx context.Context) error {
 	c := ClientFrom(ctx)
 	if c == nil {
@@ -148,21 +162,35 @@ func (r *Recorder[T]) Delete(ctx context.Context) error {
 	return err
 }
 
-func (r *Recorder[T]) UpdatedFields() map[string]any {
-	fields := r.AllFields()
-	if r.fields == nil {
-		return fields
+// UpdatedValues returns an updated column/value map since this Recorder was
+// instantiated.
+func (r *Recorder[T]) UpdatedValues() map[string]any {
+	values := r.Values()
+	if r.values == nil {
+		return values
 	}
 
-	for col, val := range fields {
-		orig, ok := r.fields[col]
+	for col, val := range values {
+		orig, ok := r.values[col]
 		if ok && orig == val {
-			delete(fields, col)
+			delete(values, col)
 		}
 	}
-	return fields
+	return values
 }
 
+// Values returns a column/value map of this Recorder Target's values, except
+// the primary keys.
+func (r *Recorder[T]) Values() map[string]any {
+	cols, vals := r.colValLists(false, true)
+	update := make(map[string]any, len(cols))
+	for i, col := range cols {
+		update[col] = vals[i]
+	}
+	return update
+}
+
+// WhereIDs returns a column/value map of this Recorder Target's primary keys.
 func (r *Recorder[T]) WhereIDs() map[string]any {
 	clause := make(map[string]any, len(r.Schemer.keys))
 
@@ -185,24 +213,15 @@ func (r *Recorder[T]) fieldRefs(withKeys bool) []any {
 		}
 
 		fv := ar.FieldByName(field.name)
-			// we want the address of field
+		// we want the address of field
 		refs = append(refs, fv.Addr().Interface())
 	}
 
 	return refs
 }
 
-func (r *Recorder[T]) setFields() {
-	r.fields = r.AllFields()
-}
-
-func (r *Recorder[T]) AllFields() map[string]any {
-	cols, vals := r.colValLists(false, true)
-	update := make(map[string]any, len(cols))
-	for i, col := range cols {
-		update[col] = vals[i]
-	}
-	return update
+func (r *Recorder[T]) setValues() {
+	r.values = r.Values()
 }
 
 // colValLists returns 2 lists, the column names and values.

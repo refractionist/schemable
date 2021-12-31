@@ -18,10 +18,13 @@ type WhereFunc func(query sq.SelectBuilder) sq.SelectBuilder
 // a select statement with the 'SELECT ... FROM tablename' portion composed already.
 type DeleteFunc func(query sq.DeleteBuilder) sq.DeleteBuilder
 
+// WithClient returns a modified variant of the given context with an embedded
+// client.
 func WithClient(ctx context.Context, c Client) context.Context {
 	return context.WithValue(ctx, clientKey, c)
 }
 
+// ClientFrom fetches the embedded client from the given context.
 func ClientFrom(ctx context.Context) Client {
 	c, _ := ctx.Value(clientKey).(Client)
 	return c
