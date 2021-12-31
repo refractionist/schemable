@@ -81,7 +81,7 @@ txc, err := client.Begin(ctx, &sql.TxOptions{...})
 
 tctx := schemable.WithClient(ctx, txc)
 txRec := ComicTitles.Record(nil)
-txRec.Title = "The Immortal X-Men"
+txRec.Target.Title = "The Immortal X-Men"
 err = txRec.Insert(tctx)
 
 err = txc.Commit() // or txc.Rollback()
