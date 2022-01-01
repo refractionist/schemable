@@ -43,6 +43,11 @@ func New(driver, conn string) (*DBClient, error) {
 	return c, nil
 }
 
+// DB returns the open *sql.DB instance for this Client.
+func (c *DBClient) DB() *sql.DB {
+	return c.db
+}
+
 // SetLogger sets the given logger, or resetting it to a no-op logger if nil.
 func (c *DBClient) SetLogger(l QueryLogger) {
 	if l == nil {
