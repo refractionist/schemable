@@ -90,6 +90,24 @@ func (s *Schemer[T]) DeleteWhere(ctx context.Context, fn DeleteFunc) (sql.Result
 	return c.Exec(ctx, qu, args...)
 }
 
+// Exists checks if any Recorder Target exists using the given predicate
+// args for a Where clause on the squirrel query builder.
+func (s *Schemer[T]) Exists(ctx context.Context, pred any, args ...any) (bool, error) {
+	c := ClientFrom(ctx)
+	if c == nil {
+		return false, errors.New("no client in context")
+	}
+
+	q := c.Builder().Select("COUNT(*) > 0").From(s.table).Where(pred, args...)
+	qu, args, err := q.ToSql()
+	if err != nil {
+		return false, err
+	}
+
+	has := false
+	return has, c.QueryRow(ctx, qu, args...).Scan(&has)
+}
+
 // Record returns a Recorder for the given instance, creating a new one if nil
 // is provided.
 func (s *Schemer[T]) Record(tgt *T) *Recorder[T] {

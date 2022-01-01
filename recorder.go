@@ -61,25 +61,7 @@ func (r *Recorder[T]) LoadWhere(ctx context.Context, pred any, args ...any) erro
 // Exists checks if the given Recorder Target exists in the db according to its
 // primary keys.
 func (r *Recorder[T]) Exists(ctx context.Context) (bool, error) {
-	return r.ExistsWhere(ctx, r.WhereIDs())
-}
-
-// ExistsWhere checks if any Recorder Target exists using the given predicate
-// args for a Where clause on the squirrel query builder.
-func (r *Recorder[T]) ExistsWhere(ctx context.Context, pred any, args ...any) (bool, error) {
-	c := ClientFrom(ctx)
-	if c == nil {
-		return false, errors.New("no client in context")
-	}
-
-	q := c.Builder().Select("COUNT(*) > 0").From(r.Schemer.table).Where(pred, args...)
-	qu, args, err := q.ToSql()
-	if err != nil {
-		return false, err
-	}
-
-	has := false
-	return has, c.QueryRow(ctx, qu, args...).Scan(&has)
+	return r.Schemer.Exists(ctx, r.WhereIDs())
 }
 
 // Insert uses the Recorder's Schemer to insert the Target into the database.
