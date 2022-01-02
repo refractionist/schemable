@@ -2,6 +2,8 @@ package schemable
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 
 	sq "github.com/Masterminds/squirrel"
 )
@@ -28,6 +30,18 @@ func WithClient(ctx context.Context, c Client) context.Context {
 func ClientFrom(ctx context.Context) Client {
 	c, _ := ctx.Value(clientKey).(Client)
 	return c
+}
+
+// WithTransaction begins a new transaction with a *DBClient in the given
+// context, returning a new context with the *TxnClient.
+func WithTransaction(ctx context.Context, opts *sql.TxOptions) (context.Context, *TxnClient, error) {
+	c, ok := ClientFrom(ctx).(*DBClient)
+	if !ok || c == nil {
+		return ctx, nil, errors.New("no *schemable.DBClient in context.")
+	}
+
+	t, err := c.Begin(ctx, opts)
+	return WithClient(ctx, t), t, err
 }
 
 type key int
