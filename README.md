@@ -120,10 +120,10 @@ ok  	github.com/refractionist/schemable_sqlitetest	0.419s
 
 ## TODO
 
-- [x] verify sqlite support
+- [x] verify sqlite3 support
 - [ ] verify mysql support
 - [ ] verify postgres support
-- [ ] Automatic CI tests schemable test repos
+- [x] GitHub Actions for supported databases
 
 ## Inspiration
 
