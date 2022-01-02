@@ -26,6 +26,15 @@ jobs:
     - name: Replace schemable mod in sqlitetest
       run: go mod edit -replace github.com/refractionist/schemable=../schemable
       working-directory: ./schemable_sqlitetest
+    - name: Setup Go package caching
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/go/pkg/mod              # Module download cache
+          ~/.cache/go-build         # Build cache (Linux)
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
     - name: Run sqlite tests
       run: go test -v
       working-directory: ./schemable_sqlitetest
