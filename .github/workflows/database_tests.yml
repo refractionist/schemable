@@ -1,7 +1,7 @@
 on: pull_request
-name: Test
+name: database tests
 jobs:
-  test:
+  sqlite:
     runs-on: ubuntu-latest
     steps:
     - name: Install Go
