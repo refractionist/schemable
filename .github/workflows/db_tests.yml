@@ -1,5 +1,5 @@
 on: pull_request
-name: database tests
+name: DB tests
 jobs:
   sqlite:
     runs-on: ubuntu-latest
