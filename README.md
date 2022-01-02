@@ -7,7 +7,7 @@ Schemable provides basic struct mapping against a database, using the
 
 NOTE: Only works on go 1.18, since it uses generics.
 
-[![database tests](https://github.com/refractionist/schemable/actions/workflows/database_tests.yml/badge.svg)](https://github.com/refractionist/schemable/actions/workflows/database_tests.yml)
+[![DB tests](https://github.com/refractionist/schemable/actions/workflows/db_tests.yml/badge.svg)](https://github.com/refractionist/schemable/actions/workflows/db_tests.yml)
 
 ## How to Use
 
