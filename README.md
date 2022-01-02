@@ -37,12 +37,12 @@ Schemers can list and delete multiple records:
 ```go
 import sq "github.com/Masterminds/squirrel"
 
-titleRecs, err := ComicTitles.ListWhere(ctx, func(q sq.SelectBuilder) sq.SelectBuilder {
+recorders, err := ComicTitles.ListWhere(ctx, func(q sq.SelectBuilder) sq.SelectBuilder {
   return q.Limit(10)
 })
 
 // Target is the actual *ComicTitle instance
-titleRecs[0].Target
+recorders[0].Target
 
 sqlResult, err := ComicTitles.DeleteWhere(ctx, func(q sq.DeleteBuilder) sq.DeleteBuilder {
   return q.Where(sq.Eq{"id": 1})
@@ -77,14 +77,45 @@ Schemable works with db transactions too:
 
 ```go
 // TxOptions is optional and can be nil
-txc, err := client.Begin(ctx, &sql.TxOptions{...})
+txclient, err := client.Begin(ctx, &sql.TxOptions{...})
 
-tctx := schemable.WithClient(ctx, txc)
+tctx := schemable.WithClient(ctx, txclient)
+
+// alternatively, begin the transaction directly from the context:
+// (*sql.TxOptions is still optional)
+tctx, txclient, err := schemable.WithTransaction(ctx, nil)
+
 txRec := ComicTitles.Record(nil)
 txRec.Target.Title = "The Immortal X-Men"
 err = txRec.Insert(tctx)
 
-err = txc.Commit() // or txc.Rollback()
+err = txclient.Commit() // or txclient.Rollback()
+```
+
+Both `*DBClient` and `*TxnClient` offer custom query support through squirrel:
+
+```go
+q, args, err := client.Builder().Select("id").From("comic_titles").ToSql()
+
+q, args, err := txclient.Builder().Delete("comic_titles").ToSql()
+txclient.Exec(ctx, qu, args...)
+txclient.Rollback() // whew!
+```
+
+## Where are the tests?
+
+In an effort to keep `go.mod` tidy, the tests are implemented in the
+`schemabletest` package, designed to run in packages like
+[sqlitetest][test]:
+
+```sh
+$ git clone https://github.com/refractionist/schemable_sqlitetest
+$ cd schemable_sqlitetest
+
+# add -v to see the raw sql queries
+$ go1.18beta1 test
+PASS
+ok  	github.com/refractionist/schemable_sqlitetest	0.419s
 ```
 
 ## TODO
@@ -93,7 +124,6 @@ err = txc.Commit() // or txc.Rollback()
 - [ ] verify mysql support
 - [ ] verify postgres support
 - [ ] Automatic CI tests schemable test repos
-  - [sqlitetest](https://github.com/refractionist/schemable_sqlitetest)
 
 ## Inspiration
 
@@ -102,3 +132,4 @@ pattern for Go generics.
 
 [st]: https://github.com/Masterminds/structable
 [f]: https://rakyll.org/generics-facilititators
+[test]: https://github.com/refractionist/schemable_sqlitetest
