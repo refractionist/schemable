@@ -39,8 +39,8 @@ func Run(t *testing.T, c *schemable.DBClient) {
 			t.Fatalf("invalid targets: %T %+v", targets, targets)
 		}
 		if targets[0].ID != 1 || targets[1].ID != 2 || targets[2].ID != 3 {
-			for i, t := range targets {
-				t.Errorf("target %d: %T %+v", i, t, t)
+			for i, tg := range targets {
+				t.Errorf("target %d: %T %+v", i, tg, tg)
 			}
 		}
 	})
