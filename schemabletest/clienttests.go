@@ -28,13 +28,13 @@ func Run(t *testing.T, c *schemable.DBClient) {
 	TransactionTests(t, c)
 
 	t.Run("Targets()", func(t *testing.T) {
-		recs := []*Recorder[ComicTitle]{
+		recs := []*schemable.Recorder[ComicTitle]{
 			ComicTitles.Record(&ComicTitle{ID: 1}),
 			ComicTitles.Record(&ComicTitle{ID: 2}),
 			ComicTitles.Record(&ComicTitle{ID: 3}),
 		}
 
-		targets := Targets[ComicTitle](recs)
+		targets := schemable.Targets[ComicTitle](recs)
 		if len(targets) != 3 {
 			t.Fatalf("invalid targets: %T %+v", targets, targets)
 		}
