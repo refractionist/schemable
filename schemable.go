@@ -44,11 +44,11 @@ func WithTransaction(ctx context.Context, opts *sql.TxOptions) (context.Context,
 	return WithClient(ctx, t), t, err
 }
 
-// Targets returns a slice of Target records from the given Recorders.
+// Targets returns a slice of target records from the given Recorders.
 func Targets[T any](recs []*Recorder[T]) []*T {
 	targets := make([]*T, len(recs))
 	for i, r := range recs {
-		targets[i] = recs[i].Target
+		targets[i] = r.Target
 	}
 	return targets
 }
