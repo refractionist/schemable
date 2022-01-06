@@ -26,4 +26,22 @@ func Run(t *testing.T, c *schemable.DBClient) {
 	})
 
 	TransactionTests(t, c)
+
+	t.Run("Targets()", func(t *testing.T) {
+		recs := []*Recorder[ComicTitle]{
+			ComicTitles.Record(&ComicTitle{ID: 1}),
+			ComicTitles.Record(&ComicTitle{ID: 2}),
+			ComicTitles.Record(&ComicTitle{ID: 3}),
+		}
+
+		targets := Targets[ComicTitle](recs)
+		if len(targets) != 3 {
+			t.Fatalf("invalid targets: %T %+v", targets, targets)
+		}
+		if targets[0].ID != 1 || targets[1].ID != 2 || targets[2].ID != 3 {
+			for i, t := range targets {
+				t.Errorf("target %d: %T %+v", i, t, t)
+			}
+		}
+	})
 }
