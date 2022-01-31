@@ -16,7 +16,7 @@ func SchemerTests(t *testing.T, ctx context.Context) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if rec.Target.Name != "two" {
+			if rec.Target.Name != "three" {
 				recorderErr(t, rec)
 			}
 		})
