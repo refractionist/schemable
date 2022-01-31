@@ -9,6 +9,18 @@ import (
 
 func SchemerTests(t *testing.T, ctx context.Context) {
 	t.Run("Schemer", func(t *testing.T) {
+		t.Run("First()", func(t *testing.T) {
+			rec, err := ComicTitles.First(ctx, func(q sq.SelectBuilder) sq.SelectBuilder {
+				return q.OrderBy("id DESC")
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if rec.Target.Name != "three" {
+				recorderErr(t, rec)
+			}
+		})
+
 		t.Run("ListWhere()", func(t *testing.T) {
 			recs, err := ComicTitles.ListWhere(ctx, func(q sq.SelectBuilder) sq.SelectBuilder {
 				return q.Where(sq.Eq{"name": "one"})
