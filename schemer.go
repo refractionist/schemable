@@ -31,6 +31,24 @@ func Bind[T any](table string) *Schemer[T] {
 	}
 }
 
+// First returns a *Recorder[T] of the first row, filtered by the given
+// WhereFunc. The context must have a client embedded with WithClient().
+func (s *Schemer[T]) First(ctx context.Context, fn WhereFunc) (*Recorder[T], error) {
+	c := ClientFrom(ctx)
+	if c == nil {
+		return false, errors.New("no client in context")
+	}
+
+	q := fn(c.Builder().Select(s.Columns(true)...).From(s.table)).Limit(1)
+	qu, args, err := q.ToSql()
+	if err != nil {
+		return nil, err
+	}
+
+	rec = s.Record(nil)
+	return rec, c.QueryRow(ctx, qu, args...).Scan(rec.fieldRefs(true)...)
+}
+
 // List returns rows of type T embedded in Recorders, using the given limit
 // and offset values. The context must have a client embedded with WithClient().
 func (s *Schemer[T]) List(ctx context.Context, limit, offset uint64) ([]*Recorder[T], error) {
