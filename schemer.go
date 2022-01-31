@@ -36,7 +36,7 @@ func Bind[T any](table string) *Schemer[T] {
 func (s *Schemer[T]) First(ctx context.Context, fn WhereFunc) (*Recorder[T], error) {
 	c := ClientFrom(ctx)
 	if c == nil {
-		return false, errors.New("no client in context")
+		return nil, errors.New("no client in context")
 	}
 
 	q := fn(c.Builder().Select(s.Columns(true)...).From(s.table)).Limit(1)
@@ -45,7 +45,7 @@ func (s *Schemer[T]) First(ctx context.Context, fn WhereFunc) (*Recorder[T], err
 		return nil, err
 	}
 
-	rec = s.Record(nil)
+	rec := s.Record(nil)
 	return rec, c.QueryRow(ctx, qu, args...).Scan(rec.fieldRefs(true)...)
 }
 
