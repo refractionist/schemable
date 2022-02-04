@@ -36,7 +36,7 @@ func Bind[T any](table string) *Schemer[T] {
 func (s *Schemer[T]) First(ctx context.Context, fn WhereFunc) (*Recorder[T], error) {
 	c := ClientFrom(ctx)
 	if c == nil {
-		return nil, errors.New("no client in context")
+		return nil, ErrNoClient
 	}
 
 	q := fn(c.Builder().Select(s.Columns(true)...).From(s.table)).Limit(1)
@@ -62,7 +62,7 @@ func (s *Schemer[T]) List(ctx context.Context, limit, offset uint64) ([]*Recorde
 func (s *Schemer[T]) ListWhere(ctx context.Context, fn WhereFunc) ([]*Recorder[T], error) {
 	c := ClientFrom(ctx)
 	if c == nil {
-		return nil, errors.New("no client in context")
+		return nil, ErrNoClient
 	}
 
 	q := fn(c.Builder().Select(s.Columns(true)...).From(s.table))
@@ -96,7 +96,7 @@ func (s *Schemer[T]) ListWhere(ctx context.Context, fn WhereFunc) ([]*Recorder[T
 func (s *Schemer[T]) DeleteWhere(ctx context.Context, fn DeleteFunc) (sql.Result, error) {
 	c := ClientFrom(ctx)
 	if c == nil {
-		return nil, errors.New("no client in context")
+		return nil, ErrNoClient
 	}
 
 	q := fn(c.Builder().Delete(s.table))
@@ -113,7 +113,7 @@ func (s *Schemer[T]) DeleteWhere(ctx context.Context, fn DeleteFunc) (sql.Result
 func (s *Schemer[T]) Exists(ctx context.Context, pred any, args ...any) (bool, error) {
 	c := ClientFrom(ctx)
 	if c == nil {
-		return false, errors.New("no client in context")
+		return false, ErrNoClient
 	}
 
 	q := c.Builder().Select("COUNT(*) > 0").From(s.table).Where(pred, args...)

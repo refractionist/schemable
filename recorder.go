@@ -19,7 +19,7 @@ type Recorder[T any] struct {
 func (r *Recorder[T]) Load(ctx context.Context) error {
 	c := ClientFrom(ctx)
 	if c == nil {
-		return errors.New("no client in context")
+		return ErrNoClient
 	}
 
 	q := c.Builder().Select(r.Schemer.Columns(false)...).From(r.Schemer.table).Where(r.WhereIDs())
@@ -41,7 +41,7 @@ func (r *Recorder[T]) Load(ctx context.Context) error {
 func (r *Recorder[T]) LoadWhere(ctx context.Context, pred any, args ...any) error {
 	c := ClientFrom(ctx)
 	if c == nil {
-		return errors.New("no client in context")
+		return ErrNoClient
 	}
 
 	q := c.Builder().Select(r.Schemer.Columns(true)...).From(r.Schemer.table).Where(pred, args...)
@@ -68,7 +68,7 @@ func (r *Recorder[T]) Exists(ctx context.Context) (bool, error) {
 func (r *Recorder[T]) Insert(ctx context.Context) error {
 	c := ClientFrom(ctx)
 	if c == nil {
-		return errors.New("no client in context")
+		return ErrNoClient
 	}
 
 	cols, vals := r.colValLists(true, false)
@@ -114,7 +114,7 @@ func (r *Recorder[T]) Update(ctx context.Context) error {
 
 	c := ClientFrom(ctx)
 	if c == nil {
-		return errors.New("no client in context")
+		return ErrNoClient
 	}
 
 	q := c.Builder().Update(r.Schemer.table).SetMap(updates).Where(r.WhereIDs())
@@ -134,7 +134,7 @@ func (r *Recorder[T]) Update(ctx context.Context) error {
 func (r *Recorder[T]) Delete(ctx context.Context) error {
 	c := ClientFrom(ctx)
 	if c == nil {
-		return errors.New("no client in context")
+		return ErrNoClient
 	}
 
 	q := c.Builder().Delete(r.Schemer.table).Where(r.WhereIDs())

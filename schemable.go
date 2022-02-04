@@ -53,6 +53,8 @@ func Targets[T any](recs []*Recorder[T]) []*T {
 	return targets
 }
 
+var ErrNoClient = errors.New("no client in context")
+
 type key int
 
 var clientKey = key(1)
