@@ -139,6 +139,9 @@ func (r *Recorder[T]) Delete(ctx context.Context) error {
 
 	q := c.Builder().Delete(r.Schemer.table).Where(r.WhereIDs())
 	qu, args, err := q.ToSql()
+	if err != nil {
+		return err
+	}
 
 	_, err = c.Exec(ctx, qu, args...)
 	return err
