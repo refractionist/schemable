@@ -18,7 +18,7 @@ type Client interface {
 
 // QueryLogger is a wrapper for a type that logs SQL queries.
 type QueryLogger interface {
-	LogQuery(q string, args []any)
+	LogQuery(ctx context.Context, q string, args []any)
 }
 
 // DBClient is a wrapper around an *sql.DB instance, a QueryLogger, and a
@@ -65,14 +65,14 @@ func (c *DBClient) Builder() *sq.StatementBuilderType {
 // Exec executes a query without returning any rows. The args are for any
 // placeholder parameters in the query.
 func (c *DBClient) Exec(ctx context.Context, q string, args ...any) (sql.Result, error) {
-	c.logger.LogQuery(q, args)
+	c.logger.LogQuery(ctx, q, args)
 	return c.db.ExecContext(ctx, q, args...)
 }
 
 // Query executes a query that returns rows, typically a SELECT. The args are
 // for any placeholder parameters in the query.
 func (c *DBClient) Query(ctx context.Context, q string, args ...any) (*sql.Rows, error) {
-	c.logger.LogQuery(q, args)
+	c.logger.LogQuery(ctx, q, args)
 	return c.db.QueryContext(ctx, q, args...)
 }
 
@@ -82,7 +82,7 @@ func (c *DBClient) Query(ctx context.Context, q string, args ...any) (*sql.Rows,
 // will return ErrNoRows. Otherwise, the *Row's Scan scans the first selected
 // row and discards the rest.
 func (c *DBClient) QueryRow(ctx context.Context, q string, args ...any) *sql.Row {
-	c.logger.LogQuery(q, args)
+	c.logger.LogQuery(ctx, q, args)
 	return c.db.QueryRowContext(ctx, q, args...)
 }
 
@@ -128,14 +128,14 @@ func (c *TxnClient) Rollback() error {
 // Exec executes a query without returning any rows. The args are for any
 // placeholder parameters in the query.
 func (c *TxnClient) Exec(ctx context.Context, q string, args ...any) (sql.Result, error) {
-	c.logger.LogQuery(q, args)
+	c.logger.LogQuery(ctx, q, args)
 	return c.tx.ExecContext(ctx, q, args...)
 }
 
 // Query executes a query that returns rows, typically a SELECT. The args are
 // for any placeholder parameters in the query.
 func (c *TxnClient) Query(ctx context.Context, q string, args ...any) (*sql.Rows, error) {
-	c.logger.LogQuery(q, args)
+	c.logger.LogQuery(ctx, q, args)
 	return c.tx.QueryContext(ctx, q, args...)
 }
 
@@ -145,7 +145,7 @@ func (c *TxnClient) Query(ctx context.Context, q string, args ...any) (*sql.Rows
 // will return ErrNoRows. Otherwise, the *Row's Scan scans the first selected
 // row and discards the rest.
 func (c *TxnClient) QueryRow(ctx context.Context, q string, args ...any) *sql.Row {
-	c.logger.LogQuery(q, args)
+	c.logger.LogQuery(ctx, q, args)
 	return c.tx.QueryRowContext(ctx, q, args...)
 }
 
@@ -156,7 +156,7 @@ func (c *TxnClient) Builder() *sq.StatementBuilderType {
 
 type noLogger struct{}
 
-func (l *noLogger) LogQuery(q string, args []any) {
+func (l *noLogger) LogQuery(ctx context.Context, q string, args []any) {
 }
 
 var nilLogger = &noLogger{}

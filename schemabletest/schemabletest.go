@@ -56,6 +56,6 @@ type testLogger struct {
 	t *testing.T
 }
 
-func (l *testLogger) LogQuery(q string, args []any) {
+func (l *testLogger) LogQuery(ctx context.Context, q string, args []any) {
 	l.t.Logf("SQL: %s; ARGS: %+v", q, args)
 }
