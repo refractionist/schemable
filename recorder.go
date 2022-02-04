@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"time"
 )
 
 // Recorder records changes to Target of type T using its Schemer.
@@ -27,8 +28,11 @@ func (r *Recorder[T]) Load(ctx context.Context) error {
 		return err
 	}
 
+
+	start := time.Now()
 	refs := r.fieldRefs(false)
 	err = c.QueryRow(ctx, qu, args...).Scan(refs...)
+	c.LogQuery(WithDBDuration(ctx, start), qu, args)
 	if err == nil {
 		r.setValues()
 	}
@@ -49,8 +53,10 @@ func (r *Recorder[T]) LoadWhere(ctx context.Context, pred any, args ...any) erro
 		return err
 	}
 
+	start := time.Now()
 	refs := r.fieldRefs(true)
 	err = c.QueryRow(ctx, qu, args...).Scan(refs...)
+	c.LogQuery(WithDBDuration(ctx, start), qu, args)
 	if err == nil {
 		r.setValues()
 	}
@@ -77,7 +83,9 @@ func (r *Recorder[T]) Insert(ctx context.Context) error {
 		return err
 	}
 
+	start := time.Now()
 	res, err := c.Exec(ctx, qu, args...)
+	c.LogQuery(WithDBDuration(ctx, start), qu, args)
 	if err != nil {
 		return err
 	}
@@ -121,7 +129,10 @@ func (r *Recorder[T]) Update(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+
+	start := time.Now()
 	_, err = c.Exec(ctx, qu, args...)
+	c.LogQuery(WithDBDuration(ctx, start), qu, args)
 	if err == nil {
 		r.setValues()
 	}
@@ -142,7 +153,9 @@ func (r *Recorder[T]) Delete(ctx context.Context) error {
 		return err
 	}
 
+	start := time.Now()
 	_, err = c.Exec(ctx, qu, args...)
+	c.LogQuery(WithDBDuration(ctx, start), qu, args)
 	return err
 }
 

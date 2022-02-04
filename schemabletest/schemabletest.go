@@ -57,5 +57,5 @@ type testLogger struct {
 }
 
 func (l *testLogger) LogQuery(ctx context.Context, q string, args []any) {
-	l.t.Logf("SQL: %s; ARGS: %+v", q, args)
+	l.t.Logf("SQL: %s; ARGS: %+v, TIME: %s", q, args, schemable.DBDurationFrom(ctx))
 }

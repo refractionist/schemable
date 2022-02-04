@@ -14,10 +14,6 @@ type Client interface {
 	Query(ctx context.Context, q string, args ...any) (*sql.Rows, error)
 	QueryRow(ctx context.Context, q string, args ...any) *sql.Row
 	Builder() *sq.StatementBuilderType
-}
-
-// QueryLogger is a wrapper for a type that logs SQL queries.
-type QueryLogger interface {
 	LogQuery(ctx context.Context, q string, args []any)
 }
 
@@ -25,8 +21,8 @@ type QueryLogger interface {
 // squirrel query builder.
 type DBClient struct {
 	db      *sql.DB
-	logger  QueryLogger
 	builder *sq.StatementBuilderType
+	logger  QueryLogger
 }
 
 // New initiates a new database connection with the given connection string
@@ -38,9 +34,7 @@ func New(driver, conn string) (*DBClient, error) {
 	}
 
 	builder := sq.StatementBuilder.RunWith(db)
-	c := &DBClient{db: db, logger: nilLogger, builder: &builder}
-	c.SetLogger(nil)
-	return c, nil
+	return &DBClient{db: db, logger: nilLogger, builder: &builder}, nil
 }
 
 // DB returns the open *sql.DB instance for this Client.
@@ -57,6 +51,11 @@ func (c *DBClient) SetLogger(l QueryLogger) {
 	}
 }
 
+// LogQuery logs the given query info to this client's logger.
+func (c *DBClient) LogQuery(ctx context.Context, q string, args []any) {
+	c.logger.LogQuery(ctx, q, args)
+}
+
 // Builder is the squirrel query builder for this db connection.
 func (c *DBClient) Builder() *sq.StatementBuilderType {
 	return c.builder
@@ -65,14 +64,12 @@ func (c *DBClient) Builder() *sq.StatementBuilderType {
 // Exec executes a query without returning any rows. The args are for any
 // placeholder parameters in the query.
 func (c *DBClient) Exec(ctx context.Context, q string, args ...any) (sql.Result, error) {
-	c.logger.LogQuery(ctx, q, args)
 	return c.db.ExecContext(ctx, q, args...)
 }
 
 // Query executes a query that returns rows, typically a SELECT. The args are
 // for any placeholder parameters in the query.
 func (c *DBClient) Query(ctx context.Context, q string, args ...any) (*sql.Rows, error) {
-	c.logger.LogQuery(ctx, q, args)
 	return c.db.QueryContext(ctx, q, args...)
 }
 
@@ -82,7 +79,6 @@ func (c *DBClient) Query(ctx context.Context, q string, args ...any) (*sql.Rows,
 // will return ErrNoRows. Otherwise, the *Row's Scan scans the first selected
 // row and discards the rest.
 func (c *DBClient) QueryRow(ctx context.Context, q string, args ...any) *sql.Row {
-	c.logger.LogQuery(ctx, q, args)
 	return c.db.QueryRowContext(ctx, q, args...)
 }
 
@@ -101,8 +97,8 @@ func (c *DBClient) Ping(ctx context.Context) error {
 // squirrel query builder.
 type TxnClient struct {
 	tx      *sql.Tx
-	logger  QueryLogger
 	builder *sq.StatementBuilderType
+	logger  QueryLogger
 }
 
 // Begin starts a transaction. See database/sql#DB.BeginTx.
@@ -128,14 +124,12 @@ func (c *TxnClient) Rollback() error {
 // Exec executes a query without returning any rows. The args are for any
 // placeholder parameters in the query.
 func (c *TxnClient) Exec(ctx context.Context, q string, args ...any) (sql.Result, error) {
-	c.logger.LogQuery(ctx, q, args)
 	return c.tx.ExecContext(ctx, q, args...)
 }
 
 // Query executes a query that returns rows, typically a SELECT. The args are
 // for any placeholder parameters in the query.
 func (c *TxnClient) Query(ctx context.Context, q string, args ...any) (*sql.Rows, error) {
-	c.logger.LogQuery(ctx, q, args)
 	return c.tx.QueryContext(ctx, q, args...)
 }
 
@@ -145,18 +139,15 @@ func (c *TxnClient) Query(ctx context.Context, q string, args ...any) (*sql.Rows
 // will return ErrNoRows. Otherwise, the *Row's Scan scans the first selected
 // row and discards the rest.
 func (c *TxnClient) QueryRow(ctx context.Context, q string, args ...any) *sql.Row {
-	c.logger.LogQuery(ctx, q, args)
 	return c.tx.QueryRowContext(ctx, q, args...)
+}
+
+// LogQuery logs the given query info to this client's logger.
+func (c *TxnClient) LogQuery(ctx context.Context, q string, args []any) {
+	c.logger.LogQuery(ctx, q, args)
 }
 
 // Builder is the squirrel query builder for this db connection.
 func (c *TxnClient) Builder() *sq.StatementBuilderType {
 	return c.builder
 }
-
-type noLogger struct{}
-
-func (l *noLogger) LogQuery(ctx context.Context, q string, args []any) {
-}
-
-var nilLogger = &noLogger{}
