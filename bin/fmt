@@ -1,0 +1,6 @@
+#!/bin/bash
+#
+# Generates and formats code.
+
+set -x
+goimports -w -l *.go

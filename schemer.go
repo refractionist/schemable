@@ -3,7 +3,6 @@ package schemable
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"reflect"
 	"strings"
 
@@ -132,7 +131,9 @@ func (s *Schemer[T]) Record(tgt *T) *Recorder[T] {
 	if tgt == nil {
 		tgt = new(T)
 	}
-	return &Recorder[T]{Schemer: s, Target: tgt}
+	rec := &Recorder[T]{Schemer: s, Target: tgt}
+	rec.setValues()
+	return rec
 }
 
 // Table returns the table name that the Schemer's type T uses.

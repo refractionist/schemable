@@ -2,7 +2,6 @@ package schemable
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"reflect"
 )

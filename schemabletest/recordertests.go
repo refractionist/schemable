@@ -176,20 +176,6 @@ func RecorderTests(t *testing.T, ctx context.Context) {
 				Volume: 300,
 			})
 
-			inserting := rec.UpdatedValues()
-			if val := inserting["name"]; val != "three" {
-				t.Errorf("unexpected Name: %q", val)
-			}
-			if val := inserting["volume"]; val != 300 {
-				t.Errorf("unexpected Volume: %T %+v", val, val)
-			}
-			if val := inserting["id"]; val != nil {
-				t.Errorf("ID is set: %T %+v", val, val)
-			}
-			if val := inserting["id_two"]; val != nil {
-				t.Errorf("ID2 is set: %T %+v", val, val)
-			}
-
 			if err := rec.Insert(ctx); err != nil {
 				t.Fatal(err)
 			}
