@@ -111,11 +111,14 @@ In an effort to keep `go.mod` tidy, the tests are implemented in the
 [sqlitetest][test]:
 
 ```sh
+# both schemable and schemable_sqlitetest need to be in the same dir for
+# bin/test.
+$ git clone https://github.com/refractionist/schemable
 $ git clone https://github.com/refractionist/schemable_sqlitetest
 $ cd schemable_sqlitetest
 
 # add -v to see the raw sql queries
-$ go1.18beta1 test
+$ bin/test
 PASS
 ok  	github.com/refractionist/schemable_sqlitetest	0.419s
 ```
