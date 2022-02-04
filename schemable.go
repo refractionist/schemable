@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"time"
 
 	sq "github.com/Masterminds/squirrel"
 )
@@ -53,8 +54,35 @@ func Targets[T any](recs []*Recorder[T]) []*T {
 	return targets
 }
 
+// WithDBDuration wraps the context with the db execution duration based on
+// the given start time.
+func WithDBDuration(ctx context.Context, start time.Time) context.Context {
+	return context.WithValue(ctx, dbDurKey, time.Since(start))
+}
+
+// DBDurationFrom extracts db execution duration from the given context.
+func DBDurationFrom(ctx context.Context) time.Duration {
+	return ctx.Value(dbDurKey).(time.Duration)
+}
+
+// QueryLogger is a wrapper for a type that logs SQL queries.
+type QueryLogger interface {
+	LogQuery(ctx context.Context, q string, args []any)
+}
+
+type noLogger struct{}
+
+func (l *noLogger) LogQuery(ctx context.Context, q string, args []any) {
+}
+
+var nilLogger = &noLogger{}
+
+
 var ErrNoClient = errors.New("no client in context")
 
 type key int
 
-var clientKey = key(1)
+var (
+	clientKey = key(1)
+	dbDurKey = key(3)
+)

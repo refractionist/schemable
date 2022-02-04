@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"reflect"
 	"strings"
+	"time"
 
 	sq "github.com/Masterminds/squirrel"
 )
@@ -45,7 +46,10 @@ func (s *Schemer[T]) First(ctx context.Context, fn WhereFunc) (*Recorder[T], err
 	}
 
 	rec := s.Record(nil)
-	return rec, c.QueryRow(ctx, qu, args...).Scan(rec.fieldRefs(true)...)
+	start := time.Now()
+	err = c.QueryRow(ctx, qu, args...).Scan(rec.fieldRefs(true)...)
+	c.LogQuery(WithDBDuration(ctx, start), qu, args)
+	return rec, err
 }
 
 // List returns rows of type T embedded in Recorders, using the given limit
@@ -70,6 +74,7 @@ func (s *Schemer[T]) ListWhere(ctx context.Context, fn WhereFunc) ([]*Recorder[T
 		return nil, err
 	}
 
+	start := time.Now()
 	rows, err := c.Query(ctx, qu, args...)
 	if err != nil || rows == nil {
 		return nil, err
@@ -87,6 +92,7 @@ func (s *Schemer[T]) ListWhere(ctx context.Context, fn WhereFunc) ([]*Recorder[T
 		rec.setValues()
 		recs = append(recs, rec)
 	}
+	c.LogQuery(WithDBDuration(ctx, start), qu, args)
 	return recs, rows.Err()
 }
 
@@ -104,7 +110,10 @@ func (s *Schemer[T]) DeleteWhere(ctx context.Context, fn DeleteFunc) (sql.Result
 		return nil, err
 	}
 
-	return c.Exec(ctx, qu, args...)
+	start := time.Now()
+	res, err := c.Exec(ctx, qu, args...)
+	c.LogQuery(WithDBDuration(ctx, start), qu, args)
+	return res, err
 }
 
 // Exists checks if any Recorder Target exists using the given predicate
@@ -122,7 +131,10 @@ func (s *Schemer[T]) Exists(ctx context.Context, pred any, args ...any) (bool, e
 	}
 
 	has := false
-	return has, c.QueryRow(ctx, qu, args...).Scan(&has)
+	start := time.Now()
+	err = c.QueryRow(ctx, qu, args...).Scan(&has)
+	c.LogQuery(WithDBDuration(ctx, start), qu, args)
+	return has, err
 }
 
 // Record returns a Recorder for the given instance, creating a new one if nil
