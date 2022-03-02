@@ -19,6 +19,9 @@ func SchemerTests(t *testing.T, ctx context.Context) {
 			if rec.Target.Name != "three" {
 				recorderErr(t, rec)
 			}
+			if v := rec.UpdatedValues(); len(v) > 0 {
+				t.Errorf("has updated values: %+v", v)
+			}
 		})
 
 		t.Run("ListWhere()", func(t *testing.T) {
@@ -39,6 +42,10 @@ func SchemerTests(t *testing.T, ctx context.Context) {
 			if recs[0].Target.Name != "one" {
 				recorderErr(t, recs[0])
 			}
+
+			if v := recs[0].UpdatedValues(); len(v) > 0 {
+				t.Errorf("has updated values: %+v", v)
+			}
 		})
 
 		t.Run("List()", func(t *testing.T) {
@@ -51,8 +58,12 @@ func SchemerTests(t *testing.T, ctx context.Context) {
 				t.Fatal("no records")
 			}
 
-			if recs[0].Target.Name != "two" {
+			if recs[0].Target.Name != "direct" {
 				recorderErr(t, recs[0])
+			}
+
+			if v := recs[0].UpdatedValues(); len(v) > 0 {
+				t.Errorf("has updated values: %+v", v)
 			}
 		})
 
