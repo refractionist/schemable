@@ -268,6 +268,22 @@ func RecorderTests(t *testing.T, ctx context.Context) {
 			if l := len(postupdate); l != 0 {
 				t.Error("updated fields should be empty")
 			}
+
+			t.Run("on new object", func(t *testing.T) {
+				rec := ComicTitles.Record(&ComicTitle{
+					Name: "new",
+				})
+				vals := rec.UpdatedValues()
+				if len(vals) != 2 {
+					t.Errorf("wrong number of updated values: %+v", vals)
+				}
+				if n := vals["name"]; n != "new" {
+					t.Errorf("invalid name: %q", n)
+				}
+				if v := vals["volume"]; v != 0 {
+					t.Errorf("invalid volume: %d", v)
+				}
+			})
 		})
 
 		t.Run("Values()", func(t *testing.T) {

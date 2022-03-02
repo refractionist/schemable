@@ -139,7 +139,11 @@ func (s *Schemer[T]) Exists(ctx context.Context, pred any, args ...any) (bool, e
 }
 
 // Record returns a Recorder for the given instance, creating a new one if nil
-// is provided.
+// is provided. For updating purposes, the returned recorder's UpdatedValues()
+// do not take the given target's fields into account. Be aware how default
+// values (like "" or 0) will affect your database. Use one of the Load or List
+// funcs before setting properties in order to take advantage of partial
+// updates.
 func (s *Schemer[T]) Record(tgt *T) *Recorder[T] {
 	if tgt == nil {
 		tgt = new(T)
