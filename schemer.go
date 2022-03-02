@@ -48,6 +48,7 @@ func (s *Schemer[T]) First(ctx context.Context, fn WhereFunc) (*Recorder[T], err
 	rec := s.Record(nil)
 	start := time.Now()
 	err = c.QueryRow(ctx, qu, args...).Scan(rec.fieldRefs(true)...)
+	rec.setValues()
 	c.LogQuery(WithDBDuration(ctx, start), qu, args)
 	return rec, err
 }
@@ -143,9 +144,7 @@ func (s *Schemer[T]) Record(tgt *T) *Recorder[T] {
 	if tgt == nil {
 		tgt = new(T)
 	}
-	rec := &Recorder[T]{Schemer: s, Target: tgt}
-	rec.setValues()
-	return rec
+	return &Recorder[T]{Schemer: s, Target: tgt}
 }
 
 // Table returns the table name that the Schemer's type T uses.

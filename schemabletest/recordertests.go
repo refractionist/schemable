@@ -25,8 +25,25 @@ func RecorderTests(t *testing.T, ctx context.Context) {
 				Name:   "two",
 				Volume: 200,
 			})
+
+			vals := rec.UpdatedValues()
+			if len(vals) != 2 {
+				t.Errorf("has wrong updated values: %+v", vals)
+			} else {
+				if n := vals["name"]; n != "two" {
+					t.Errorf("wrong name: %q", n)
+				}
+				if v := vals["volume"]; v != 200 {
+					t.Errorf("wrong volume: %d", v)
+				}
+			}
+
 			if err := rec.Insert(ctx); err != nil {
 				t.Fatal(err)
+			}
+
+			if v := rec.UpdatedValues(); len(v) > 0 {
+				t.Errorf("has updated values: %+v", v)
 			}
 		})
 
@@ -49,6 +66,10 @@ func RecorderTests(t *testing.T, ctx context.Context) {
 				ID2: 1,
 			})
 			assertExists(t, ctx, rec)
+
+			if v := rec.UpdatedValues(); len(v) == 0 {
+				t.Errorf("has no updated values: %+v", v)
+			}
 		})
 
 		t.Run("Load()", func(t *testing.T) {
@@ -76,6 +97,10 @@ func RecorderTests(t *testing.T, ctx context.Context) {
 				t.Errorf("unexpected Volume: %d", rec.Target.Volume)
 			}
 
+			if v := rec.UpdatedValues(); len(v) > 0 {
+				t.Errorf("has updated values: %+v", v)
+			}
+
 			if t.Failed() {
 				t.Logf("Loaded: %+v", rec.Target)
 			}
@@ -92,6 +117,10 @@ func RecorderTests(t *testing.T, ctx context.Context) {
 
 			if err := rec.LoadWhere(ctx, sq.Eq{"name": "one"}); err != nil {
 				t.Fatal(err)
+			}
+
+			if v := rec.UpdatedValues(); len(v) > 0 {
+				t.Errorf("has updated values: %+v", v)
 			}
 
 			if rec.Target.ID != 1 {
@@ -148,6 +177,37 @@ func RecorderTests(t *testing.T, ctx context.Context) {
 			if rec2.Target.Volume != 201 {
 				t.Errorf("unexpected Volume: %d", rec2.Target.Volume)
 			}
+
+			t.Run("without loading first", func(t *testing.T) {
+				rec := ComicTitles.Record(&ComicTitle{
+					ID:     2,
+					ID2:    2,
+					Name:   "direct",
+					Volume: 500,
+				})
+				if err := rec.Update(ctx); err != nil {
+					t.Fatal(err)
+				}
+
+				if v := rec.UpdatedValues(); len(v) > 0 {
+					t.Errorf("has updated values: %+v", v)
+				}
+
+				rec2 := ComicTitles.Record(&ComicTitle{
+					ID:  2,
+					ID2: 2,
+				})
+				if err := rec2.Load(ctx); err != nil {
+					t.Fatal(err)
+				}
+				if rec2.Target.Name != "direct" {
+					t.Errorf("unexpected Name: %q", rec2.Target.Name)
+				}
+
+				if rec2.Target.Volume != 500 {
+					t.Errorf("unexpected Volume: %d", rec2.Target.Volume)
+				}
+			})
 		})
 
 		t.Run("Delete()", func(t *testing.T) {
