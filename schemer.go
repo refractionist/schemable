@@ -170,6 +170,19 @@ func (s *Schemer[T]) Columns(withKeys bool) []string {
 	return names
 }
 
+// InsertColumns returns column names for inserts for the Schemer's type T.
+// Column names do not include the table prefix.
+func (s *Schemer[T]) InsertColumns() []string {
+	names := make([]string, 0, len(s.fields))
+	for _, f := range s.fields {
+		if f.isAuto {
+			continue
+		}
+		names = append(names, f.column)
+	}
+	return names
+}
+
 // Internal representation of a field on a database table, and its
 // relation to a struct field.
 type field struct {

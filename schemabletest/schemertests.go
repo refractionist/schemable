@@ -127,5 +127,24 @@ func SchemerTests(t *testing.T, ctx context.Context) {
 				}
 			})
 		})
+
+		t.Run("InsertColumns()", func(t *testing.T) {
+			cols := ComicTitles.InsertColumns()
+			if len(cols) != 3 {
+				t.Fatalf("invalid columns: %+v", cols)
+			}
+
+			if cols[0] != "id_two" {
+				t.Errorf("invalid col 1: %q", cols[1])
+			}
+
+			if cols[1] != "name" {
+				t.Errorf("invalid col 2: %q", cols[2])
+			}
+
+			if cols[2] != "volume" {
+				t.Errorf("invalid col 3: %q", cols[3])
+			}
+		})
 	})
 }
