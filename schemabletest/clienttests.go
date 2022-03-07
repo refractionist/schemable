@@ -21,6 +21,64 @@ func Run(t *testing.T, c *schemable.DBClient) {
 			t.Error("wrong client in ctx")
 		}
 
+		t.Run("Builders from context", func(t *testing.T) {
+			t.Run("Select()", func(t *testing.T) {
+				b := schemable.Select(dbctx, "table", "col1", "col2")
+				if b == nil {
+					t.Fatalf("builder is nil: %+v", b)
+				}
+				sql, _, err := b.ToSql()
+				if err != nil {
+					t.Fatal(err)
+				}
+				if sql != "SELECT col1, col2 FROM table" {
+					t.Errorf("invalid sql: %s", sql)
+				}
+			})
+
+			t.Run("Insert()", func(t *testing.T) {
+				b := schemable.Insert(dbctx, "table")
+				if b == nil {
+					t.Fatal("builder is nil")
+				}
+				sql, _, err := b.Values(1, 2).ToSql()
+				if err != nil {
+					t.Fatal(err)
+				}
+				if sql != "INSERT INTO table VALUES (?,?)" {
+					t.Errorf("invalid sql: %s", sql)
+				}
+			})
+
+			t.Run("Update()", func(t *testing.T) {
+				b := schemable.Update(dbctx, "table")
+				if b == nil {
+					t.Fatal("builder is nil")
+				}
+				sql, _, err := b.SetMap(map[string]any{"col1": 1}).ToSql()
+				if err != nil {
+					t.Fatal(err)
+				}
+				if sql != "UPDATE table SET col1 = ?" {
+					t.Errorf("invalid sql: %s", sql)
+				}
+			})
+
+			t.Run("Delete()", func(t *testing.T) {
+				b := schemable.Delete(dbctx, "table")
+				if b == nil {
+					t.Fatal("builder is nil")
+				}
+				sql, _, err := b.ToSql()
+				if err != nil {
+					t.Fatal(err)
+				}
+				if sql != "DELETE FROM table" {
+					t.Errorf("invalid sql: %s", sql)
+				}
+			})
+		})
+
 		RecorderTests(t, dbctx)
 		SchemerTests(t, dbctx)
 	})

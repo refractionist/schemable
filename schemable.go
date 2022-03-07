@@ -65,6 +65,50 @@ func DBDurationFrom(ctx context.Context) time.Duration {
 	return ctx.Value(dbDurKey).(time.Duration)
 }
 
+// Select returns a SelectBuilder from the client in the given context, or nil
+// if there is no client.
+func Select(ctx context.Context, table string, columns ... string) *sq.SelectBuilder {
+	c := ClientFrom(ctx)
+	if c == nil {
+		return nil
+	}
+	b := c.Builder().Select(columns...).From(table)
+	return &b
+}
+
+// Insert returns an InsertBuilder from the client in the given context, or nil
+// if there is no client.
+func Insert(ctx context.Context, table string) *sq.InsertBuilder {
+	c := ClientFrom(ctx)
+	if c == nil {
+		return nil
+	}
+	b := c.Builder().Insert(table)
+	return &b
+}
+
+// Update returns an UpdateBuilder from the client in the given context, or nil
+// if there is no client.
+func Update(ctx context.Context, table string) *sq.UpdateBuilder {
+	c := ClientFrom(ctx)
+	if c == nil {
+		return nil
+	}
+	b := c.Builder().Update(table)
+	return &b
+}
+
+// Delete returns a DeleteBuilder from the client in the given context, or nil
+// if there is no client.
+func Delete(ctx context.Context, table string) *sq.DeleteBuilder {
+	c := ClientFrom(ctx)
+	if c == nil {
+		return nil
+	}
+	b := c.Builder().Delete(table)
+	return &b
+}
+
 // QueryLogger is a wrapper for a type that logs SQL queries.
 type QueryLogger interface {
 	LogQuery(ctx context.Context, q string, args []any)
