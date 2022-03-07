@@ -23,9 +23,9 @@ func Run(t *testing.T, c *schemable.DBClient) {
 
 		t.Run("Builders from context", func(t *testing.T) {
 			t.Run("Select()", func(t *testing.T) {
-				b := schemable.Select(dbctx, "table", "col1", "col2")
-				if b == nil {
-					t.Fatalf("builder is nil: %+v", b)
+				c, b := schemable.Select(dbctx, "table", "col1", "col2")
+				if c == nil {
+					t.Fatal("client is nil")
 				}
 				sql, _, err := b.ToSql()
 				if err != nil {
@@ -37,9 +37,9 @@ func Run(t *testing.T, c *schemable.DBClient) {
 			})
 
 			t.Run("Insert()", func(t *testing.T) {
-				b := schemable.Insert(dbctx, "table")
-				if b == nil {
-					t.Fatal("builder is nil")
+				c, b := schemable.Insert(dbctx, "table")
+				if c == nil {
+					t.Fatal("client is nil")
 				}
 				sql, _, err := b.Values(1, 2).ToSql()
 				if err != nil {
@@ -51,9 +51,9 @@ func Run(t *testing.T, c *schemable.DBClient) {
 			})
 
 			t.Run("Update()", func(t *testing.T) {
-				b := schemable.Update(dbctx, "table")
-				if b == nil {
-					t.Fatal("builder is nil")
+				c, b := schemable.Update(dbctx, "table")
+				if c == nil {
+					t.Fatal("client is nil")
 				}
 				sql, _, err := b.SetMap(map[string]any{"col1": 1}).ToSql()
 				if err != nil {
@@ -65,9 +65,9 @@ func Run(t *testing.T, c *schemable.DBClient) {
 			})
 
 			t.Run("Delete()", func(t *testing.T) {
-				b := schemable.Delete(dbctx, "table")
-				if b == nil {
-					t.Fatal("builder is nil")
+				c, b := schemable.Delete(dbctx, "table")
+				if c == nil {
+					t.Fatal("client is nil")
 				}
 				sql, _, err := b.ToSql()
 				if err != nil {
