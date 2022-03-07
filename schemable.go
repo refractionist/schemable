@@ -65,48 +65,44 @@ func DBDurationFrom(ctx context.Context) time.Duration {
 	return ctx.Value(dbDurKey).(time.Duration)
 }
 
-// Select returns a SelectBuilder from the client in the given context, or nil
-// if there is no client.
-func Select(ctx context.Context, table string, columns ... string) *sq.SelectBuilder {
+// Select returns the Client with a SelectBuilder from the given context, or a
+// nil Client if there is none.
+func Select(ctx context.Context, table string, columns ... string) (Client, sq.SelectBuilder) {
 	c := ClientFrom(ctx)
 	if c == nil {
-		return nil
+		return nil, sq.SelectBuilder{}
 	}
-	b := c.Builder().Select(columns...).From(table)
-	return &b
+	return c, c.Builder().Select(columns...).From(table)
 }
 
-// Insert returns an InsertBuilder from the client in the given context, or nil
-// if there is no client.
-func Insert(ctx context.Context, table string) *sq.InsertBuilder {
+// Insert returns the Client with an InsertBuilder from the given context, or a
+// nil Client if there is none.
+func Insert(ctx context.Context, table string) (Client, sq.InsertBuilder) {
 	c := ClientFrom(ctx)
 	if c == nil {
-		return nil
+		return nil, sq.InsertBuilder{}
 	}
-	b := c.Builder().Insert(table)
-	return &b
+	return c, c.Builder().Insert(table)
 }
 
-// Update returns an UpdateBuilder from the client in the given context, or nil
-// if there is no client.
-func Update(ctx context.Context, table string) *sq.UpdateBuilder {
+// Update returns the Client with an UpdateBuilder from the given context, or a
+// nil Client if there is none.
+func Update(ctx context.Context, table string) (Client, sq.UpdateBuilder) {
 	c := ClientFrom(ctx)
 	if c == nil {
-		return nil
+		return nil, sq.UpdateBuilder{}
 	}
-	b := c.Builder().Update(table)
-	return &b
+	return c, c.Builder().Update(table)
 }
 
-// Delete returns a DeleteBuilder from the client in the given context, or nil
-// if there is no client.
-func Delete(ctx context.Context, table string) *sq.DeleteBuilder {
+// Delete returns the Client with a DeleteBuilder from the given context, or a
+// nil Client if there is none.
+func Delete(ctx context.Context, table string) (Client, sq.DeleteBuilder) {
 	c := ClientFrom(ctx)
 	if c == nil {
-		return nil
+		return nil, sq.DeleteBuilder{}
 	}
-	b := c.Builder().Delete(table)
-	return &b
+	return c, c.Builder().Delete(table)
 }
 
 // QueryLogger is a wrapper for a type that logs SQL queries.
